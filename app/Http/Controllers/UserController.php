@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
 
 class UserController extends Controller
 {
@@ -21,7 +23,7 @@ class UserController extends Controller
 
     public function index()
     {
-        //
+
     }
 
     /**
@@ -37,12 +39,83 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $this->userRepository->create([
+        $user = $this->userRepository->create([
         'name' => $request->name,
         'email' => $request->email,
         'role' => "Customer",
         'password' => Hash::make($request->password),
         ]);
+
+        return new UserResource($user);
+
+    }
+
+    public function updatePassword(Request $request)
+    {
+
+        $validatedData = $request->validate([
+            "id" => "required|integer|exists:users,id",
+            "password" => "required|string|min:8",
+            "old_password" => "required"
+        ]);
+
+        try {
+
+
+            $user = $this->userRepository->find($validatedData["id"]);
+
+            if(Hash::check($validatedData["old_password"],$user->password)){
+                $user -> password = Hash::make($validatedData["password"]);
+                $user -> update();
+
+                return response()->json([
+                    "message" => "Password changed successfully.",
+                    "data" => $user,
+                ], 200);
+
+
+            }
+
+            return response()->json([
+                "error" => "Your Password is wrong",
+            ], 401);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                "message" => "Failed to change password.",
+                "error" => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateName (Request $request){
+
+        $validatedData = $request->validate([
+            "id" => "required|integer|exists:users,id",
+            "name" => "required|string",
+        ]);
+
+        try {
+
+            $user = $this->userRepository->updateName([
+                "id" => $validatedData["id"],
+                "name" => $validatedData["name"]
+            ]);
+
+            return response()->json([
+                "message" => "Name changed successfully.",
+                "data" => $user,
+            ], 200);
+
+
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "Failed to change password.",
+                "error" => $e->getMessage(),
+            ], 500);
+        }
 
     }
 
@@ -51,7 +124,7 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+
     }
 
     /**
