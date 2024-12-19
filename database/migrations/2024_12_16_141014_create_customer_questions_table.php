@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('customer_questions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("customer_id");
-            $table->unsignedBigInteger("admin_id");
+            $table->unsignedBigInteger("admin_id")->nullable();
             $table->longText("question");
-            $table->longText("answer");
+            $table->longText("answer")->nullable();
             $table->timestamps();
         });
     }

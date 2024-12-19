@@ -11,7 +11,7 @@ class StoreCustomerQuestionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,8 @@ class StoreCustomerQuestionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "customer_id" => "required|exists:customers,id",
+            "question" => "required"
         ];
     }
 }

@@ -4,16 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
+use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Repositories\CustomerRepository;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+     protected $customerRepository;
+
+     function __construct(CustomerRepository $customerRepository)
+     {
+        $this->customerRepository = $customerRepository;
+     }
+
     public function index()
     {
         //
+
+
     }
 
     /**
@@ -22,6 +35,8 @@ class CustomerController extends Controller
     public function create()
     {
         //
+
+
     }
 
     /**
@@ -30,6 +45,15 @@ class CustomerController extends Controller
     public function store(StoreCustomerRequest $request)
     {
         //
+        $customer = $this->customerRepository->create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => "Customer",
+            'password' => Hash::make($request->password),
+        ]);
+
+        return new CustomerResource($customer);
+
     }
 
     /**
@@ -37,7 +61,7 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
-        //
+        return new CustomerResource($customer);
     }
 
     /**
@@ -53,7 +77,18 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        //
+        $customer = $this->customerRepository->update([
+            "name" => $request->name,
+            "phone" => $request->phone,
+            "city" => $request->city,
+            "township" => $request->township,
+            "zip_code" => $request->zip_code,
+            "address" => $request->address,
+            "user_id" => $request->user_id,
+            "id" => $request->id
+        ]);
+
+        return new CustomerResource($customer);
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace App\Repositories\Contract;
 
+
+
 interface BaseRepository {
 
     public function find($id);
@@ -13,3 +15,5 @@ interface BaseRepository {
     public function delete($id);
 
 }
+
+

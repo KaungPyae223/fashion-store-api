@@ -11,7 +11,7 @@ class UpdateAdminRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,13 @@ class UpdateAdminRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "id" => "required|exists:admins,id",
+            "user_id" => "required|exists:users,id",
+            "name" => "required",
+            "role" => "required",
+            "phone" => "required",
+            "address" => "required",
+            "retired" => "required|boolean"
         ];
     }
 }

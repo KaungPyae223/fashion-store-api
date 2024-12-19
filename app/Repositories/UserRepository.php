@@ -4,8 +4,7 @@ namespace App\Repositories;
 
 use App\Models\User;
 use App\Repositories\Contract\BaseRepository;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Hash;
+
 
 class UserRepository implements BaseRepository {
 
@@ -17,8 +16,7 @@ class UserRepository implements BaseRepository {
     }
 
     public function find($id){
-        $user = $this->model::find($id);
-        return $user;
+
     }
 
     public function create(array $data){
@@ -35,14 +33,5 @@ class UserRepository implements BaseRepository {
 
     }
 
-   
-
-    public function updateName(array $data){
-        $user = $this->find($data["id"]);
-        $user->name = $data["name"];
-        $user -> update();
-
-        return $user;
-    }
 
 }
