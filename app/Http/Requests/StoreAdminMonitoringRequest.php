@@ -22,7 +22,10 @@ class StoreAdminMonitoringRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "admin_id" => "required|exists:admins,admin",
+            "method" => "required",
+            "type" => "required",
+            "action" => "required"
         ];
     }
 }

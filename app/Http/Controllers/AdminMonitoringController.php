@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAdminMonitoringRequest;
 use App\Http\Requests\UpdateAdminMonitoringRequest;
+use App\Http\Resources\AdminMonitoringResource;
 use App\Models\AdminMonitoring;
 
 class AdminMonitoringController extends Controller
@@ -13,7 +14,20 @@ class AdminMonitoringController extends Controller
      */
     public function index()
     {
-        //
+        $query = AdminMonitoring::paginate(10);
+
+        $brands = AdminMonitoringResource::collection($query);
+
+        return response()->json([
+            "data" => $brands,
+            'meta' => [
+                'current_page' => $query->currentPage(),
+                'last_page' => $query->lastPage(),
+                'total' => $query->total(),
+            ],
+            "status" => 200,
+        ]);
+
     }
 
     /**

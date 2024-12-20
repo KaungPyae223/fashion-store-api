@@ -11,7 +11,7 @@ class UpdateTypeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,9 @@ class UpdateTypeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "admin_id" => "required|exists:admins,id",
+            "type" => "required",
+            "category_id" => "required|exists:categories,id"
         ];
     }
 }

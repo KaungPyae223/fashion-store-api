@@ -4,16 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTypeRequest;
 use App\Http\Requests\UpdateTypeRequest;
+use App\Http\Resources\TypeResource;
 use App\Models\Type;
+use App\Repositories\TypeRepository;
 
 class TypeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+    protected $typeRepository;
+
+    function __construct(TypeRepository $typeRepository)
+    {
+        $this->typeRepository = $typeRepository;
+    }
+
     public function index()
     {
-        //
+        return response()->json([
+            "data" => TypeResource::collection(Type::all())
+        ]);
     }
 
     /**
@@ -29,7 +41,14 @@ class TypeController extends Controller
      */
     public function store(StoreTypeRequest $request)
     {
-        //
+
+        $type = $this->typeRepository->create([
+            "category_id" => $request->category_id,
+            "type" => $request->type,
+            "admin_id" => $request->admin_id,
+        ]);
+
+        return new TypeResource($type);
     }
 
     /**
@@ -37,7 +56,7 @@ class TypeController extends Controller
      */
     public function show(Type $type)
     {
-        //
+        return new TypeResource($type);
     }
 
     /**
@@ -53,7 +72,14 @@ class TypeController extends Controller
      */
     public function update(UpdateTypeRequest $request, Type $type)
     {
-        //
+        $type = $this->typeRepository->update([
+            "id" => $type->id,
+            "category_id" => $request->category_id,
+            "type" => $request->type,
+            "admin_id" => $request->admin_id,
+        ]);
+
+        return new TypeResource($type);
     }
 
     /**
@@ -61,6 +87,6 @@ class TypeController extends Controller
      */
     public function destroy(Type $type)
     {
-        //
+        $type = $this->typeRepository->delete($type->id);
     }
 }

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger("admin_id");
             $table->string("method");
             $table->string("type");
-            $table->string("action");
+            $table->longText("action");
             $table->timestamps();
         });
     }

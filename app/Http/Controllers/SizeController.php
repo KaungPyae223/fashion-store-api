@@ -4,16 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSizeRequest;
 use App\Http\Requests\UpdateSizeRequest;
+use App\Http\Resources\SizeResource;
 use App\Models\Size;
+use App\Repositories\SizeRepository;
 
 class SizeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+     protected $sizeRepository;
+
+    function __construct(SizeRepository $sizeRepository)
+    {
+        $this->sizeRepository = $sizeRepository;
+    }
+
     public function index()
     {
-        //
+
+        return response()->json([
+            "data" => SizeResource::collection(Size::all())
+        ]);
+
     }
 
     /**
@@ -29,7 +43,14 @@ class SizeController extends Controller
      */
     public function store(StoreSizeRequest $request)
     {
-        //
+        $size = $this->sizeRepository->create([
+            "category_id" => $request->category_id,
+            "size" => $request->size,
+            "admin_id" => $request->admin_id,
+        ]);
+
+        return new SizeResource($size);
+
     }
 
     /**
@@ -37,7 +58,7 @@ class SizeController extends Controller
      */
     public function show(Size $size)
     {
-        //
+
     }
 
     /**
@@ -45,7 +66,7 @@ class SizeController extends Controller
      */
     public function edit(Size $size)
     {
-        //
+        return new SizeResource($size);
     }
 
     /**
@@ -53,7 +74,14 @@ class SizeController extends Controller
      */
     public function update(UpdateSizeRequest $request, Size $size)
     {
-        //
+        $size = $this->sizeRepository->update([
+            "id" => $size->id,
+            "category_id" => $request->category_id,
+            "size" => $request->size,
+            "admin_id" => $request->admin_id,
+        ]);
+
+        return new SizeResource($size);
     }
 
     /**
@@ -61,6 +89,6 @@ class SizeController extends Controller
      */
     public function destroy(Size $size)
     {
-        //
+        $this->sizeRepository->delete($size->id);
     }
 }

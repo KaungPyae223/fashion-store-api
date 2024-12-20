@@ -22,8 +22,8 @@ class UpdateAdminRequest extends FormRequest
     public function rules(): array
     {
         return [
+            "admin_id" => "required|exists:admins,id",
             "id" => "required|exists:admins,id",
-            "user_id" => "required|exists:users,id",
             "name" => "required",
             "role" => "required",
             "phone" => "required",

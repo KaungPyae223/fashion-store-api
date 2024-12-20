@@ -49,7 +49,8 @@ class AdminController extends Controller
             "password" => Hash::make($request->password),
             "photo" => $request->file("photo"),
             "phone" => $request->phone,
-            "address" => $request->address
+            "address" => $request->address,
+            "admin_id" => $request->admin_id,
         ]);
 
         return new AdminResource($admin);
@@ -78,11 +79,11 @@ class AdminController extends Controller
     {
         $admin = $this->adminRepository->update([
             "id" => $request->id,
-            "user_id" => $request->user_id,
             "name" => $request->name,
             "role" => $request->role,
             "phone" => $request->phone,
             "address" => $request->address,
+            "admin_id" => $request->admin_id,
             "retired" => $request->retired,
         ]);
 
@@ -93,6 +94,7 @@ class AdminController extends Controller
     public function updatePhoto (Request $request){
 
         $request->validate([
+            "admin_id" => "required|exists:admins,id",
             "id" => "required|exists:admins,id",
             "photo" => "required|image|mimes:jpeg,png,jpg,gif",
         ]);
@@ -100,6 +102,7 @@ class AdminController extends Controller
         $admin = $this->adminRepository->updatePhoto([
             "id" => $request->id,
             "photo" => $request->photo,
+            "admin_id" => $request->admin_id,
         ]);
 
         return new AdminResource($admin);

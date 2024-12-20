@@ -26,13 +26,7 @@ class AdminRepository extends BasicFunctions implements BaseRepository {
         return $this->userModel::find($id);
     }
 
-    public function storePhoto($image){
 
-        $imageName = 'Admin_Image' . uniqid() . '.' . $image->extension();
-        $imagePath = $image->storeAs("images/adminImage", $imageName,"public");
-        return  asset('storage/' . $imagePath);
-
-    }
 
 
     public function create(array $data){
@@ -44,7 +38,7 @@ class AdminRepository extends BasicFunctions implements BaseRepository {
             "role" => $data["role"],
         ]);
 
-        $imageURL = $this->storePhoto($data["photo"]);
+        $imageURL = $this->storePhoto($data["photo"],"adminImage");
 
         $admin = $this->adminModel::create([
             "user_id" => $user->id,
@@ -53,23 +47,37 @@ class AdminRepository extends BasicFunctions implements BaseRepository {
             "photo" => $imageURL
         ]);
 
+        $this->addAdminActivity([
+            "admin_id" => $data["admin_id"],
+            "method" => "Create",
+            "type" => "Admin",
+            "action" => "Create a new admin ".$data["name"]
+        ]);
+
         return $admin;
 
     }
 
     public function update(array $data){
-        $user = $this->findUser($data["user_id"]);
+
+        $admin = $this->find($data["id"]);
+        $admin -> update([
+            "phone" => $data["phone"],
+            "address" => $data["address"],
+            "retired" => $data["retired"]
+        ]);
+
+        $user = $this->findUser($admin->user_id);
         $user -> update([
             "name" => $data["name"],
             "role" => $data["role"],
         ]);
 
-        $admin = $this->find($data["id"]);
-        $admin -> update([
-            "user_id" => $user->id,
-            "phone" => $data["phone"],
-            "address" => $data["address"],
-            "retired" => $data["retired"]
+        $this->addAdminActivity([
+            "admin_id" => $data["admin_id"],
+            "method" => "Update",
+            "type" => "Admin",
+            "action" => "Update a admin ".$data["name"]. " data"
         ]);
 
         return $admin;
@@ -82,10 +90,17 @@ class AdminRepository extends BasicFunctions implements BaseRepository {
 
         $this->deletePhoto($admin->photo);
 
-        $newPhotoURL = $this->storePhoto($data["photo"]);
+        $newPhotoURL = $this->storePhoto($data["photo"],"adminImage");
 
         $admin -> update ([
             "photo" => $newPhotoURL
+        ]);
+
+        $this->addAdminActivity([
+            "admin_id" => $data["admin_id"],
+            "method" => "Update",
+            "type" => "Admin",
+            "action" => "Update a admin ".$admin->user->name. " photo"
         ]);
 
         return $admin;
