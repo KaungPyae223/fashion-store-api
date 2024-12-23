@@ -9,4 +9,12 @@ class OrderDetails extends Model
 {
     /** @use HasFactory<\Database\Factories\OrderDetailsFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'product_id',
+        'order_id',
+        'size',
+        'unit_price',
+        'qty',
+    ];
 }

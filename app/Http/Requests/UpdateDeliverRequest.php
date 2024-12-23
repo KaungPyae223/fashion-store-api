@@ -11,7 +11,7 @@ class UpdateDeliverRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,12 @@ class UpdateDeliverRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "admin_id" => ["required","integer","exists:admins,id"],
+            "name" => ["required","string","unique:delivers,name,".$this->id],
+            "email" => ["required","email"],
+            "phone" => ["required","string"],
+            "address" => ["required","string"],
+            "status" => ["required","string","in:available,unavailable"]
         ];
     }
 }

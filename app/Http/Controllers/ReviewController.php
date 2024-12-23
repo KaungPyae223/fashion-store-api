@@ -29,7 +29,9 @@ class ReviewController extends Controller
      */
     public function store(StoreReviewRequest $request)
     {
-        //
+        $review = Review::create($request->validated());
+
+        return response()->json($review, 201);
     }
 
     /**
@@ -61,6 +63,10 @@ class ReviewController extends Controller
      */
     public function destroy(Review $review)
     {
-        //
+        $review->delete();
+
+        return response()->json([
+            'message' => 'Review deleted successfully',
+        ], 204);
     }
 }

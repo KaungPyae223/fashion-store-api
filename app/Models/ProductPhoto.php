@@ -9,4 +9,7 @@ class ProductPhoto extends Model
 {
     /** @use HasFactory<\Database\Factories\ProductPhotoFactory> */
     use HasFactory;
+
+    protected $fillable = ["product_id", "photo"];
+
 }

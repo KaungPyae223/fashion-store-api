@@ -4,16 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDeliverRequest;
 use App\Http\Requests\UpdateDeliverRequest;
+use App\Http\Resources\DeliverResource;
 use App\Models\Deliver;
+use App\Repositories\DeliverRepository;
 
 class DeliverController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+     protected $deliverRepository;
+
+     function __construct(DeliverRepository $deliverRepository)
+     {
+            $this->deliverRepository = $deliverRepository;
+     }
+
     public function index()
     {
-        //
+
     }
 
     /**
@@ -21,7 +31,7 @@ class DeliverController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -29,7 +39,10 @@ class DeliverController extends Controller
      */
     public function store(StoreDeliverRequest $request)
     {
-        //
+        $deliver = $this->deliverRepository->create($request->validated());
+
+        return new DeliverResource($deliver);
+
     }
 
     /**
@@ -51,9 +64,15 @@ class DeliverController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateDeliverRequest $request, Deliver $deliver)
+    public function update(UpdateDeliverRequest $request, $id)
     {
-        //
+        $deliver = $this->deliverRepository->update(
+            array_merge($request->validated(),["id" => $id])
+        );
+
+        return new DeliverResource($deliver);
+
+
     }
 
     /**

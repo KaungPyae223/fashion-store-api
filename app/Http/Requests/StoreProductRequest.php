@@ -26,6 +26,7 @@ class StoreProductRequest extends FormRequest
             "type_id" => "required|exists:types,id",
             "brand_id" => "required|exists:brands,id",
             "category_id" => "required|exists:categories,id",
+            // "size_id" => "required|array",
             "color_id" => "required|exists:colors,id",
             "name" => "required",
             "cover_photo" => "required|image|mimes:jpeg,png,jpg,gif",

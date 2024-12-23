@@ -3,16 +3,19 @@
 namespace App\Repositories;
 
 use App\Models\Product;
+use App\Models\ProductSize;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
 
 class ProductRepository extends BasicFunctions implements BaseRepository{
 
     protected $model;
+    protected $productSizeModel;
 
     function __construct()
     {
         $this->model = Product::class;
+        $this->productSizeModel = ProductSize::class;
     }
 
     public function find($id){
@@ -33,6 +36,13 @@ class ProductRepository extends BasicFunctions implements BaseRepository{
             "gender" => $data["gender"],
         ]);
 
+        // foreach($data["size_id"] as $size){
+        //     $this->productSizeModel::create([
+        //         "product_id" => $product->id,
+        //         "size_id" => $size
+        //     ]);
+        // }
+
         $this->addAdminActivity([
             "admin_id" => $data["admin_id"],
             "method" => "Create",
@@ -45,6 +55,20 @@ class ProductRepository extends BasicFunctions implements BaseRepository{
 
     public function update(array $data){
         $product = $this->model::find($data["id"]);
+
+        $product_sizes = $this->productSizeModel::where("product_id",$product->id);
+
+        // if($product_sizes != $data["size_id"]){
+        //     $product_sizes->delete();
+
+        //     foreach($data["size_id"] as $size){
+        //         $this->productSizeModel::create([
+        //             "product_id" => $product->id,
+        //             "size_id" => $size
+        //         ]);
+        //     }
+        // }
+
 
 
         $this->addAdminActivity([
@@ -61,7 +85,8 @@ class ProductRepository extends BasicFunctions implements BaseRepository{
             $this->compareDiff("price",$product->price,$data["price"]).
             $this->compareDiff("description",$product->description,$data["description"]).
             $this->compareDiff("status",$product->status,$data["status"]),
-            $this->compareDiff("gender",$product->status,$data["gender"])
+            $this->compareDiff("gender",$product->status,$data["gender"]),
+            // $this->compareDiff("size_id",$product_sizes,$data["size_id"]),
         ]);
 
         $product->update([

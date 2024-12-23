@@ -8,10 +8,18 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerQuestionController;
+use App\Http\Controllers\DeliverController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderDetailsController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductPhotoController;
+use App\Http\Controllers\ProductSizeController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\TypeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -65,3 +73,27 @@ Route::post("product/update-cover",[ProductController::class,"updatePhoto"]);
 Route::put("product/restore",[ProductController::class,"restoreProduct"]);
 Route::put("product/delete",[ProductController::class,"deleteProduct"]);
 Route::apiResource("product",ProductController::class)->except(["destroy"]);
+
+// Product Photo
+Route::apiResource("product-photo",ProductPhotoController::class)->only(["store","destroy"]);
+
+// Product Sizes
+Route::apiResource("product-size",ProductSizeController::class)->only(["store","update"]);
+
+// Product Payment
+Route::apiResource("payment",PaymentController::class)->only(["store","update"]);
+
+// Delivery
+Route::apiResource("deliver",DeliverController::class)->only(["store","update"]);
+
+// Order
+Route::apiResource("order",OrderController::class)->only(["store","update"]);
+
+// Order Details
+Route::apiResource("order-details",OrderDetailsController::class)->only(["store"]);
+
+// Review
+Route::apiResource("review",ReviewController::class)->only(["store","destroy"]);
+
+// WishList
+Route::apiResource("wishlist",WishlistController::class)->only(["store","destroy"]);

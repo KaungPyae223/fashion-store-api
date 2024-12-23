@@ -32,6 +32,7 @@ class UpdateProductRequest extends FormRequest
             "description" => "required",
             "status" => "required|in:public,private",
             "gender" => "required|in:Men,Women,All",
+            // "size_id" => "required|array",
         ];
     }
 }

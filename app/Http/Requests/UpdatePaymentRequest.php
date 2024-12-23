@@ -11,7 +11,7 @@ class UpdatePaymentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +21,12 @@ class UpdatePaymentRequest extends FormRequest
      */
     public function rules(): array
     {
+
         return [
-            //
+            'payment' => 'required|string|unique:payments,payment,'.$this->id,
+            'status' => 'required|in:available,unavailable',
+            "admin_id" => "required|integer|exists:admins,id",
         ];
+
     }
 }

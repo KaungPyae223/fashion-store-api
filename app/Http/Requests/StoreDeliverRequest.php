@@ -11,7 +11,7 @@ class StoreDeliverRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,11 @@ class StoreDeliverRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "name" => ["required","string","unique:delivers,name"],
+            "email" => ["required","email"],
+            "phone" => ["required","string"],
+            "address" => ["required","string"],
+            "admin_id" => ["required","integer","exists:admins,id"],
         ];
     }
 }

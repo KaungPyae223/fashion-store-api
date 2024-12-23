@@ -4,13 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
+use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Repositories\OrderRepository;
 
 class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+     protected $orderRepository;
+
+     function __construct(OrderRepository $orderRepository)
+     {
+         $this->orderRepository = $orderRepository;
+     }
+
     public function index()
     {
         //
@@ -29,7 +39,8 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        //
+        $order = $this->orderRepository->create($request->validated());
+        return new OrderResource($order);
     }
 
     /**
@@ -51,9 +62,10 @@ class OrderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateOrderRequest $request, Order $order)
+    public function update(UpdateOrderRequest $request, $id)
     {
-        //
+        $order = $this->orderRepository->update( array_merge($request->validated(),["id" => $id]));
+        return new OrderResource($order);
     }
 
     /**

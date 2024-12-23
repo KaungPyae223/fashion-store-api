@@ -50,7 +50,8 @@ class ProductController extends Controller
             "price" => $request->price,
             "description" => $request->description,
             "status" => $request->status,
-            "gender" => $request->gender
+            "gender" => $request->gender,
+            // "product_size" => $request->size_id,
         ]);
 
 
@@ -110,7 +111,9 @@ class ProductController extends Controller
             "description" => $request->description,
             "status" => $request->status,
             "gender" => $request->gender,
-            "admin_id" => $request->admin_id
+            "admin_id" => $request->admin_id,
+            // "product_size" => $request->size_id,
+
         ]);
 
 

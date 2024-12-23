@@ -9,4 +9,13 @@ class Deliver extends Model
 {
     /** @use HasFactory<\Database\Factories\DeliverFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        "name",
+        "email",
+        "phone",
+        "address",
+        "status"
+    ];
+
 }

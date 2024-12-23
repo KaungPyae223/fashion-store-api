@@ -29,7 +29,10 @@ class OrderDetailsController extends Controller
      */
     public function store(StoreOrderDetailsRequest $request)
     {
-        //
+        $order = OrderDetails::create($request->validated());
+
+        return response()->json($order, 201);
+
     }
 
     /**

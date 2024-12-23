@@ -11,7 +11,7 @@ class UpdateProductSizeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,11 @@ class UpdateProductSizeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+
+            "admin_id" => "required|integer|exists:admins,id",
+            "product_id" => "required|integer|exists:products,id",
+            "size_id" => "required|array",
+
         ];
     }
 }

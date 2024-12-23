@@ -29,7 +29,9 @@ class WishlistController extends Controller
      */
     public function store(StoreWishlistRequest $request)
     {
-        //
+        $wishlist = Wishlist::create($request->validated());
+
+        return response()->json($wishlist, 201);
     }
 
     /**
@@ -61,6 +63,10 @@ class WishlistController extends Controller
      */
     public function destroy(Wishlist $wishlist)
     {
-        //
+        $wishlist->delete();
+
+        return response()->json([
+            'message' => 'Wishlist deleted successfully'
+        ], 204);
     }
 }

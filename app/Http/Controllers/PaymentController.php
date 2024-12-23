@@ -4,13 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
+use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
+use App\Repositories\PaymentRepository;
 
 class PaymentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+     protected $paymentRepository;
+
+     function __construct(PaymentRepository $paymentRepository)
+     {
+        $this->paymentRepository = $paymentRepository;
+     }
+
     public function index()
     {
         //
@@ -29,7 +39,13 @@ class PaymentController extends Controller
      */
     public function store(StorePaymentRequest $request)
     {
-        //
+        $payment = $this->paymentRepository->create([
+            "payment" => $request->payment,
+            "admin_id" => $request->admin_id
+        ]);
+
+        return new PaymentResource($payment);
+
     }
 
     /**
@@ -51,9 +67,17 @@ class PaymentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePaymentRequest $request, Payment $payment)
+    public function update(UpdatePaymentRequest $request, $id)
     {
-        //
+        $payment = $this->paymentRepository->update([
+            "payment" => $request->payment,
+            "admin_id" => $request->admin_id,
+            "id" => $id,
+            "status" => $request->status
+        ]);
+
+        return new PaymentResource($payment);
+
     }
 
     /**

@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string("email");
             $table->string("phone");
             $table->longText("address");
-            $table->longText("note");
+            $table->longText("note")->nullable();
             $table->enum("status",["prepare","delivered"])->default("prepare");
             $table->timestamps();
         });

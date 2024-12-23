@@ -9,4 +9,10 @@ class Wishlist extends Model
 {
     /** @use HasFactory<\Database\Factories\WishlistFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'product_id',
+        'customer_id',
+    ];
+
 }
