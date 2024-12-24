@@ -5,15 +5,18 @@ namespace App\Repositories;
 use App\Models\Size;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
+use Illuminate\Support\Facades\Auth;
 
 class SizeRepository extends BasicFunctions implements BaseRepository
 {
 
     protected $model;
+    protected $admin_id;
 
     function __construct()
     {
         $this->model = Size::class;
+        $this->admin_id = Auth::user()->admin->id;
     }
 
     public function find($id){
@@ -21,10 +24,11 @@ class SizeRepository extends BasicFunctions implements BaseRepository
     }
 
     public function create(array $data){
+
         $size = $this->model::create($data);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Create",
             "type" => "Size",
             "action" => "Create a size ".$data["size"]
@@ -37,7 +41,7 @@ class SizeRepository extends BasicFunctions implements BaseRepository
         $size = $this->find($data["id"]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Update",
             "type" => "Size",
             "action" =>

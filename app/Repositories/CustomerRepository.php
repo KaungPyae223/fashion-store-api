@@ -31,7 +31,13 @@ class CustomerRepository implements BaseRepository
     public function create(array $data){
         $user = $this->userModel::create($data);
         $customer = $this->customerModel::create(["user_id" => $user->id]);
-        return $customer;
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+
+        return [
+            ['token' => $token, 'customer' => $customer]
+        ];
     }
 
     public function update(array $data){

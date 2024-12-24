@@ -3,10 +3,12 @@
 namespace App\Repositories\Contract;
 
 use App\Models\AdminMonitoring;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class BasicFunctions {
 
+    
     public function deletePhoto($image){
 
         $imagePath = str_replace(asset('storage'), '', $image);

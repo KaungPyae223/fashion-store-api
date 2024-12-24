@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminMonitoringController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
@@ -22,6 +23,29 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix("v1")->group(function () {
+
+    Route::controller(AuthController::class)->group(function () {
+        Route::post('/register', 'register');
+        Route::post('/login', 'login');
+    });
+
+    Route::middleware(['auth:sanctum', 'user-role:Product Admin'])->group(function () {
+        Route::apiResource('size',SizeController::class);
+    });
+
+});
+
+
+
+
+
+
+
+
+
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -45,11 +69,17 @@ Route::get('questions/{id}',[CustomerQuestionController::class,"getAllCustomerQu
 Route::get('answer/{id}',[CustomerQuestionController::class,"getAllCustomerAnswers"]);
 Route::delete('questions/{id}',[CustomerQuestionController::class,"destroy"]);
 
-// Category
+
+
+
+
+
 Route::apiResource('category',CategoryController::class) -> only(["index"]);
 
+
+// Category
+
 // Size
-Route::apiResource('size',SizeController::class);
 
 // Type
 Route::apiResource('type',TypeController::class);

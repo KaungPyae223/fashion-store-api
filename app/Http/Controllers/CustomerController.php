@@ -44,15 +44,7 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        //
-        $customer = $this->customerRepository->create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => "Customer",
-            'password' => Hash::make($request->password),
-        ]);
-
-        return new CustomerResource($customer);
+       
 
     }
 

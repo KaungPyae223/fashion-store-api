@@ -43,13 +43,15 @@ class SizeController extends Controller
      */
     public function store(StoreSizeRequest $request)
     {
+
         $size = $this->sizeRepository->create([
             "category_id" => $request->category_id,
             "size" => $request->size,
-            "admin_id" => $request->admin_id,
         ]);
 
-        return new SizeResource($size);
+        return response()->json($size);
+
+        // return new SizeResource($size);
 
     }
 
@@ -78,7 +80,6 @@ class SizeController extends Controller
             "id" => $size->id,
             "category_id" => $request->category_id,
             "size" => $request->size,
-            "admin_id" => $request->admin_id,
         ]);
 
         return new SizeResource($size);

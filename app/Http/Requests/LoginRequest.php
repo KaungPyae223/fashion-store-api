@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateSizeRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,8 +22,8 @@ class UpdateSizeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "size" => "required",
-            "category_id" => "required|exists:categories,id"
+            'email' => 'required|email',
+            'password' => 'required|string',
         ];
     }
 }
