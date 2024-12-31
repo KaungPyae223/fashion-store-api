@@ -7,6 +7,7 @@ use App\Http\Requests\UpdatePaymentRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
 use App\Repositories\PaymentRepository;
+use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
@@ -21,9 +22,32 @@ class PaymentController extends Controller
         $this->paymentRepository = $paymentRepository;
      }
 
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $searchTerm = $request->input('q');
+
+
+        $query = Payment::query();
+
+        if ($searchTerm) {
+            $query->where('payment', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Paginate the results
+        $payments = $query->orderBy("id", "desc")->paginate(10);
+
+        // Transform the paginated data using the resource collection
+        $data = PaymentResource::collection($payments);
+
+        // Return the response with meta information
+        return response()->json([
+            "data" => $data,
+            'meta' => [
+                'current_page' => $payments->currentPage(),
+                'last_page' => $payments->lastPage(),
+                'total' => $payments->total(),
+            ],
+        ]);
     }
 
     /**
@@ -44,7 +68,10 @@ class PaymentController extends Controller
             "admin_id" => $request->admin_id
         ]);
 
-        return new PaymentResource($payment);
+        return response()->json([
+            'message' => 'Size created successfully',
+            'data' => new PaymentResource($payment)
+        ], 201);
 
     }
 
@@ -71,7 +98,6 @@ class PaymentController extends Controller
     {
         $payment = $this->paymentRepository->update([
             "payment" => $request->payment,
-            "admin_id" => $request->admin_id,
             "id" => $id,
             "status" => $request->status
         ]);
@@ -86,5 +112,19 @@ class PaymentController extends Controller
     public function destroy(Payment $payment)
     {
         //
+
+        $count = $payment->order->count();
+
+        if($count == 0){
+            $this->paymentRepository->delete($payment->id);
+            return response()->json(['message' => 'Payment deleted successfully']);
+        }else{
+            return response()->json([
+                "status" => 409,
+                "error" => "Conflict",
+                "message" => "Payment cannot be deleted due to existing dependencies."
+            ],409);
+        }
+
     }
 }

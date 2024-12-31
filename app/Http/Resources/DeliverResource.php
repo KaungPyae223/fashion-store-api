@@ -14,6 +14,14 @@ class DeliverResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            "id" => $this->id,
+            "delivery" => $this->name,
+            "email" => $this->email,
+            "phone" => $this->phone,
+            "address" => $this->address,
+            "status" => $this->status,
+            "totalDeliver" => $this->order->count()
+        ];
     }
 }

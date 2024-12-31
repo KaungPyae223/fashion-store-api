@@ -22,7 +22,6 @@ class StoreColorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "admin_id" => "required|exists:admins,id",
             "color" => "required|unique:colors,color"
         ];
     }

@@ -63,11 +63,6 @@ class SizeRepository extends BasicFunctions implements BaseRepository
     public function delete($id){
         $size = $this->find($id);
         $size->delete();
-        return response()->json(
-            [
-                "message" => "successfully deleted",
-                "status" => 200
-            ]
-        );
+        
     }
 }

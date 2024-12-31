@@ -18,4 +18,8 @@ class Deliver extends Model
         "status"
     ];
 
+    public function order() {
+        return $this->hasMany(Order::class,"delivery_id","id");
+    }
+
 }

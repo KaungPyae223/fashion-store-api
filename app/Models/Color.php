@@ -14,4 +14,8 @@ class Color extends Model
         "color"
     ];
 
+    public function product() {
+        return $this->hasMany(Product::class,"color_id","id");
+    }
+
 }

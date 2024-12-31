@@ -22,7 +22,6 @@ class UpdateTypeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "admin_id" => "required|exists:admins,id",
             "type" => "required",
             "category_id" => "required|exists:categories,id"
         ];

@@ -22,14 +22,14 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "admin_id" => "required|exists:admins,id",
             "type_id" => "required|exists:types,id",
             "brand_id" => "required|exists:brands,id",
             "category_id" => "required|exists:categories,id",
-            // "size_id" => "required|array",
+            "size_id" => "required",
             "color_id" => "required|exists:colors,id",
             "name" => "required",
             "cover_photo" => "required|image|mimes:jpeg,png,jpg,gif",
+            "details_photos.*" => "required|image|mimes:jpeg,png,jpg,gif",
             "price" => "required|integer",
             "description" => "required",
             "status" => "required|in:public,private",

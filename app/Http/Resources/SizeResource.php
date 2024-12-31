@@ -15,8 +15,11 @@ class SizeResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            "id" => $this->id,
             "size" => $this->size,
-            "relative_category" => $this->category->category
+            "category_id" => $this->category_id,
+            "relative_category" => $this->category->category,
+            "total_products" => $this->product->count()
         ];
     }
 }

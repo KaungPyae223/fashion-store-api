@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCustomerQuestionRequest;
 use App\Http\Requests\UpdateCustomerQuestionRequest;
 use App\Models\CustomerQuestion;
+use App\Models\User;
 use App\Repositories\CustomerQuestionRepository;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerQuestionController extends Controller
 {
@@ -24,10 +27,28 @@ class CustomerQuestionController extends Controller
     public function getAllQuestions()
     {
 
-        $query = CustomerQuestion::query()->whereNull("answer")->orderBy('created_at', 'desc')->paginate(10);
+        $totalCustomerSupport = User::where("role","Customer Support")->count();
+
+        $customerSupports = User::where('role', 'Customer Support')->get();
+
+        $currentUser = Auth::user();
+
+        $adminRank = $customerSupports->search(function ($admin) use ($currentUser) {
+            return $admin->id === $currentUser->id;
+        }) + 1;
+
+
+        $query = CustomerQuestion::query()
+        ->whereNull("answer")
+        ->where("id", ">=", $adminRank) // Ensure id is at least 2
+        ->whereRaw("(id - $adminRank) % $totalCustomerSupport = 0")
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
 
         $questions = $query->map(function($question){
             return [
+                "id" => $question->id,
                 "customer_name" => $question->customer->user->name,
                 "customer_email" => $question->customer->user->email,
                 "question" => $question->question,
@@ -44,38 +65,59 @@ class CustomerQuestionController extends Controller
                 'last_page' => $query->lastPage(),
                 'total' => $query->total(),
             ],
-            "status" => 200,
         ]);
 
     }
 
-    public function getAllAnswers()
+    public function getAllAnswers(Request $request)
     {
-        $query = CustomerQuestion::query()->whereNotNull('answer')->orderBy('updated_at', 'desc')->paginate(8);
+        $customer = $request->input('customer');
+        $admin = $request->input('admin');
 
+        // Start the query
+        $query = CustomerQuestion::query();
 
-        $questions = $query->map(function($question){
+        // Filter by customer name
+        if ($customer) {
+            $query->whereHas('customer.user', function ($q) use ($customer) {
+                $q->where('name', 'like', '%' . $customer . '%');
+            });
+        }
+
+        // Filter by admin name
+        if ($admin) {
+            $query->whereHas('admin.user', function ($q) use ($admin) {
+                $q->where('name', 'like', '%' . $admin . '%');
+            });
+        }
+
+        // Filter answered questions and paginate
+        $paginatedAnswers = $query->whereNotNull('answer')
+            ->orderBy('updated_at', 'desc')
+            ->paginate(10);
+
+        // Transform data
+        $answers = $paginatedAnswers->map(function ($answer) {
             return [
-                "customer_name" => $question->customer->user->name,
-                "admin_name" => $question->admin->user->name,
-                "customer_email" => $question->customer->user->email,
-                "question" => $question->question,
-                "answer" => $question->answer,
-                "question_at" => $question->created_at,
-                "answer_at" => $question->updated_at
+                "customer_name" => $answer->customer->user->name ?? null,
+                "admin_name" => $answer->admin->user->name ?? null,
+                "customer_email" => $answer->customer->user->email ?? null,
+                "question" => $answer->question,
+                "answer" => $answer->answer,
+                "question_at" => $answer->created_at,
+                "answer_at" => $answer->updated_at,
             ];
         });
 
+        // Return response with pagination meta
         return response()->json([
-            "data" => $questions,
-            'meta' => [
-                'current_page' => $query->currentPage(),
-                'last_page' => $query->lastPage(),
-                'total' => $query->total(),
+            "data" => $answers,
+            "meta" => [
+                'current_page' => $paginatedAnswers->currentPage(),
+                'last_page' => $paginatedAnswers->lastPage(),
+                'total' => $paginatedAnswers->total(),
             ],
-            "status" => 200,
         ]);
-
     }
 
     public function getAllCustomerQuestions($id)
@@ -100,6 +142,7 @@ class CustomerQuestionController extends Controller
 
     public function getAllCustomerAnswers($id)
     {
+
 
 
         $questions = CustomerQuestion::query()
@@ -141,23 +184,23 @@ class CustomerQuestionController extends Controller
 
     }
 
-    public function answerQuestion(UpdateCustomerQuestionRequest $request, CustomerQuestion $customerQuestion)
+    public function answerQuestion(UpdateCustomerQuestionRequest $request)
     {
         $question = $this->customerQuestionRepository->answerQuestion([
             "answer" => $request->answer,
-            "admin_id" => $request->admin_id,
             "id" => $request->id
         ]);
 
         return response()->json([
             "data" => [
+                "id" => $question->id,
                 "question" => $question->question,
                 "answer" => $question->answer,
                 "question_at" => $question->created_at,
                 "answer_at" => $question->updated_at
             ],
-            "status" => 200,
-        ]);
+           'message' => 'Question answered successfully',
+        ],201);
     }
 
     /**

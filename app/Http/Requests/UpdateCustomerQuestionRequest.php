@@ -23,7 +23,6 @@ class UpdateCustomerQuestionRequest extends FormRequest
     {
         return [
            "id" => "required|exists:customer_questions,id",
-           "admin_id" => "required|exists:admins,id",
            "answer" => "required"
         ];
     }

@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateDeliverRequest;
 use App\Http\Resources\DeliverResource;
 use App\Models\Deliver;
 use App\Repositories\DeliverRepository;
+use Illuminate\Http\Request;
 
 class DeliverController extends Controller
 {
@@ -21,8 +22,33 @@ class DeliverController extends Controller
             $this->deliverRepository = $deliverRepository;
      }
 
-    public function index()
+    public function index(Request $request)
     {
+
+        $searchTerm = $request->input('q');
+
+
+        $query = Deliver::query();
+
+        if ($searchTerm) {
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Paginate the results
+        $deliveries = $query->orderBy("id", "desc")->paginate(10);
+
+        // Transform the paginated data using the resource collection
+        $data = DeliverResource::collection($deliveries);
+
+        // Return the response with meta information
+        return response()->json([
+            "data" => $data,
+            'meta' => [
+                'current_page' => $deliveries->currentPage(),
+                'last_page' => $deliveries->lastPage(),
+                'total' => $deliveries->total(),
+            ],
+        ]);
 
     }
 
@@ -41,7 +67,10 @@ class DeliverController extends Controller
     {
         $deliver = $this->deliverRepository->create($request->validated());
 
-        return new DeliverResource($deliver);
+        return response()->json([
+            'message' => 'Delivery created successfully',
+            'data' => new DeliverResource($deliver)
+        ], 201);
 
     }
 
@@ -66,12 +95,13 @@ class DeliverController extends Controller
      */
     public function update(UpdateDeliverRequest $request, $id)
     {
+
+
         $deliver = $this->deliverRepository->update(
             array_merge($request->validated(),["id" => $id])
         );
 
         return new DeliverResource($deliver);
-
 
     }
 
@@ -80,6 +110,17 @@ class DeliverController extends Controller
      */
     public function destroy(Deliver $deliver)
     {
-        //
+        $deliver->order->count();
+
+        if($deliver == 0){
+            $this->deliverRepository->delete($deliver->id);
+            return response()->json(['message' => 'Delivery deleted successfully']);
+        }else{
+            return response()->json([
+                "status" => 409,
+                "error" => "Conflict",
+                "message" => "Resource cannot be deleted due to existing dependencies."
+            ],409);
+        }
     }
 }

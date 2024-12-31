@@ -22,11 +22,32 @@ class BrandController extends Controller
         $this->brandRepository = $brandRepository;
      }
 
-    public function index()
+    public function index(Request $request)
     {
-        $query = Brand::all();
+        $searchTerm = $request->input('q');
 
-        return BrandResource::collection($query);
+
+        $query = Brand::query();
+
+        if ($searchTerm) {
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Paginate the results
+        $types = $query->orderBy("id", "desc")->paginate(10);
+
+        // Transform the paginated data using the resource collection
+        $data = BrandResource::collection($types);
+
+        // Return the response with meta information
+        return response()->json([
+            "data" => $data,
+            'meta' => [
+                'current_page' => $types->currentPage(),
+                'last_page' => $types->lastPage(),
+                'total' => $types->total(),
+            ],
+        ]);
 
     }
 
@@ -46,10 +67,12 @@ class BrandController extends Controller
         $brand = $this->brandRepository->create([
             "name" => $request->name,
             "photo" => $request->file("photo"),
-            "admin_id" => $request->admin_id,
         ]);
 
-        return new BrandResource($brand);
+        return response()->json([
+            'message' => 'Brand created successfully',
+            'data' => new BrandResource($brand)
+        ], 201);
     }
 
     /**
@@ -71,7 +94,6 @@ class BrandController extends Controller
     public function updatePhoto (Request $request){
 
         $request->validate([
-            "admin_id" => "required|exists:admins,id",
             "id" => "required|exists:brands,id",
             "photo" => "required|image|mimes:jpeg,png,jpg,gif",
         ]);
@@ -79,7 +101,6 @@ class BrandController extends Controller
         $admin = $this->brandRepository->updateImage([
             "id" => $request->id,
             "photo" => $request->file("photo"),
-            "admin_id" => $request->admin_id,
         ]);
 
         return new BrandResource($admin);
@@ -94,7 +115,6 @@ class BrandController extends Controller
         $brand = $this->brandRepository->update([
             "name" => $request->name,
             "id" => $brand->id,
-            "admin_id" => $request->admin_id,
         ]);
 
         return new BrandResource($brand);
@@ -106,6 +126,18 @@ class BrandController extends Controller
      */
     public function destroy(Brand $brand)
     {
-        return $this->brandRepository->delete($brand->id);
+        $count = $brand->product->count();
+
+
+        if($count == 0){
+            $this->brandRepository->delete($brand->id);
+            return response()->json(['message' => 'Type deleted successfully']);
+        }else{
+            return response()->json([
+                "status" => 409,
+                "error" => "Conflict",
+                "message" => "Resource cannot be deleted due to existing dependencies."
+            ],409);
+        }
     }
 }

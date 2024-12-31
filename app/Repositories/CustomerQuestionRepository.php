@@ -3,14 +3,17 @@
 namespace App\Repositories;
 
 use App\Models\CustomerQuestion;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerQuestionRepository {
 
     protected $model;
+    protected $admin_id;
 
     function __construct()
     {
         $this->model = CustomerQuestion::class;
+        $this->admin_id = Auth::user()->admin->id;
     }
 
     public function find($id) {
@@ -26,7 +29,7 @@ class CustomerQuestionRepository {
 
         $question = $this->find($data["id"]);
         $question->update([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "answer" => $data["answer"]
         ]);
 

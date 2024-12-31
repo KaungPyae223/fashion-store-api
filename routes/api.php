@@ -33,7 +33,44 @@ Route::prefix("v1")->group(function () {
 
     Route::middleware(['auth:sanctum', 'user-role:Product Admin'])->group(function () {
         Route::apiResource('size',SizeController::class);
+        Route::apiResource("color",ColorController::class);
+        Route::apiResource('type',TypeController::class);
+
+        Route::post('brand/update-image',[BrandController::class,"updatePhoto"]);
+        Route::apiResource('brand',BrandController::class);
+
+        Route::get('category',[CategoryController::class,"index"]);
+
+        Route::get("filter-data",[ProductController::class,"getAllFilterData"]);
+        Route::get("product-properties/{id}",[ProductController::class,"getProductProperties"]);
+        Route::apiResource("product",ProductController::class)->except(["destroy"]);
+
     });
+
+    Route::middleware(['auth:sanctum', 'user-role:Customer Support'])->group(function () {
+
+        Route::controller(CustomerQuestionController::class)->group(function(){
+            Route::get("questions","getAllQuestions");
+            Route::get("answers","getAllAnswers");
+            Route::put("answer-question","answerQuestion");
+
+        });
+    });
+
+    Route::middleware(['auth:sanctum', 'user-role:Order Management'])->group(function () {
+
+        Route::apiResource("deliver",DeliverController::class)->only(["index"]);
+
+    });
+
+    Route::middleware(['auth:sanctum', 'user-role:Super Admin'])->group(function () {
+
+        Route::apiResource("deliver",DeliverController::class);
+        Route::apiResource("payment",PaymentController::class);
+
+    });
+
+
 
 });
 
@@ -79,17 +116,14 @@ Route::apiResource('category',CategoryController::class) -> only(["index"]);
 
 // Category
 
-// Size
+
 
 // Type
-Route::apiResource('type',TypeController::class);
 
 // Brand
-Route::post('brand/update-image',[BrandController::class,"updatePhoto"]);
-Route::apiResource('brand',BrandController::class);
 
-// Color
-Route::apiResource("color",ColorController::class);
+
+
 
 // Admin Activity
 Route::apiResource('activity',AdminMonitoringController::class)->only(["index"]);
@@ -102,19 +136,14 @@ Route::apiResource("blog",BlogController::class);
 Route::post("product/update-cover",[ProductController::class,"updatePhoto"]);
 Route::put("product/restore",[ProductController::class,"restoreProduct"]);
 Route::put("product/delete",[ProductController::class,"deleteProduct"]);
-Route::apiResource("product",ProductController::class)->except(["destroy"]);
 
-// Product Photo
-Route::apiResource("product-photo",ProductPhotoController::class)->only(["store","destroy"]);
 
 // Product Sizes
 Route::apiResource("product-size",ProductSizeController::class)->only(["store","update"]);
 
 // Product Payment
-Route::apiResource("payment",PaymentController::class)->only(["store","update"]);
 
 // Delivery
-Route::apiResource("deliver",DeliverController::class)->only(["store","update"]);
 
 // Order
 Route::apiResource("order",OrderController::class)->only(["store","update"]);

@@ -22,8 +22,7 @@ class UpdateBrandRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "admin_id" => "required|exists:admins,id",
-            "name" => "required|unique:brands,name,".$this->id,
+            "name" => "required|unique:brands,name,".$this->route('brand')->id,
         ];
     }
 }

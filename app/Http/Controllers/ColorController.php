@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateColorRequest;
 use App\Http\Resources\ColorResource;
 use App\Models\Color;
 use App\Repositories\ColorRepository;
+use Illuminate\Http\Request;
 
 class ColorController extends Controller
 {
@@ -21,10 +22,31 @@ class ColorController extends Controller
         $this->colorRepository = $colorRepository;
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $searchTerm = $request->input('q');
+
+
+        $query = Color::query();
+
+        if ($searchTerm) {
+            $query->where('color', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Paginate the results
+        $colors = $query->orderBy("id", "desc")->paginate(10);
+
+        // Transform the paginated data using the resource collection
+        $data = ColorResource::collection($colors);
+
+        // Return the response with meta information
         return response()->json([
-            "data" => ColorResource::collection(Color::all())
+            "data" => $data,
+            'meta' => [
+                'current_page' => $colors->currentPage(),
+                'last_page' => $colors->lastPage(),
+                'total' => $colors->total(),
+            ],
         ]);
     }
 
@@ -44,11 +66,13 @@ class ColorController extends Controller
         $color = $this->colorRepository->create(
             [
                 "color" => $request->color,
-                "admin_id" => $request->admin_id,
             ]
         );
 
-        return new ColorResource($color);
+        return response()->json([
+            'message' => 'Color created successfully',
+            'data' => new ColorResource($color)
+        ], 201);
 
     }
 
@@ -78,7 +102,6 @@ class ColorController extends Controller
             [
                 "id" => $color->id,
                 "color" => $request->color,
-                "admin_id" => $request->admin_id,
             ]
         );
 
@@ -91,10 +114,21 @@ class ColorController extends Controller
      */
     public function destroy(Color $color)
     {
-        $color = $this->colorRepository->delete(
-            [
-                "id" => $color->id,
-            ]
-        );
+
+        $count = $color->product->count();
+
+
+        if($count == 0){
+            $this->colorRepository->delete($color->id);
+            return response()->json(['message' => 'Color deleted successfully']);
+        }else{
+            return response()->json([
+                "status" => 409,
+                "error" => "Conflict",
+                "message" => "Resource cannot be deleted due to existing dependencies."
+            ],409);
+        }
+
+
     }
 }

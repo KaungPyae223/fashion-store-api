@@ -23,9 +23,8 @@ class UpdatePaymentRequest extends FormRequest
     {
 
         return [
-            'payment' => 'required|string|unique:payments,payment,'.$this->id,
+            'payment' => 'required|string|unique:payments,payment,'.$this->route("payment"),
             'status' => 'required|in:available,unavailable',
-            "admin_id" => "required|integer|exists:admins,id",
         ];
 
     }

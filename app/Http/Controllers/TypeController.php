@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateTypeRequest;
 use App\Http\Resources\TypeResource;
 use App\Models\Type;
 use App\Repositories\TypeRepository;
+use Illuminate\Http\Request;
 
 class TypeController extends Controller
 {
@@ -21,10 +22,38 @@ class TypeController extends Controller
         $this->typeRepository = $typeRepository;
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $searchTerm = $request->input('q');
+        $category = $request->input('category');
+
+
+        $query = Type::query();
+
+        if ($searchTerm) {
+            $query->where('type', 'like', '%' . $searchTerm . '%');
+        }
+
+        if ($category && $category != "all") {
+            $query->whereHas('category', function ($q) use ($category) {
+                $q->where('category', $category); // Adjust 'name' to the correct column in the categories table
+            });
+        }
+
+        // Paginate the results
+        $types = $query->orderBy("id", "desc")->paginate(10);
+
+        // Transform the paginated data using the resource collection
+        $data = TypeResource::collection($types);
+
+        // Return the response with meta information
         return response()->json([
-            "data" => TypeResource::collection(Type::all())
+            "data" => $data,
+            'meta' => [
+                'current_page' => $types->currentPage(),
+                'last_page' => $types->lastPage(),
+                'total' => $types->total(),
+            ],
         ]);
     }
 
@@ -45,10 +74,13 @@ class TypeController extends Controller
         $type = $this->typeRepository->create([
             "category_id" => $request->category_id,
             "type" => $request->type,
-            "admin_id" => $request->admin_id,
         ]);
 
-        return new TypeResource($type);
+        return response()->json([
+            'message' => 'Color created successfully',
+            'data' => new TypeResource($type)
+        ], 201);
+
     }
 
     /**
@@ -76,7 +108,6 @@ class TypeController extends Controller
             "id" => $type->id,
             "category_id" => $request->category_id,
             "type" => $request->type,
-            "admin_id" => $request->admin_id,
         ]);
 
         return new TypeResource($type);
@@ -87,6 +118,18 @@ class TypeController extends Controller
      */
     public function destroy(Type $type)
     {
-        $type = $this->typeRepository->delete($type->id);
+        $count = $type->product->count();
+
+
+        if($count == 0){
+            $this->typeRepository->delete($type->id);
+            return response()->json(['message' => 'Type deleted successfully']);
+        }else{
+            return response()->json([
+                "status" => 409,
+                "error" => "Conflict",
+                "message" => "Resource cannot be deleted due to existing dependencies."
+            ],409);
+        }
     }
 }

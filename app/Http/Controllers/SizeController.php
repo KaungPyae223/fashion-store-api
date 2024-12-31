@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateSizeRequest;
 use App\Http\Resources\SizeResource;
 use App\Models\Size;
 use App\Repositories\SizeRepository;
+use Illuminate\Http\Request;
 
 class SizeController extends Controller
 {
@@ -21,14 +22,41 @@ class SizeController extends Controller
         $this->sizeRepository = $sizeRepository;
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $searchTerm = $request->input('q');
+        $category = $request->input('category');
 
+        // Build the query
+        $query = Size::query();
+
+        if ($searchTerm) {
+            $query->where('size', 'like', '%' . $searchTerm . '%');
+        }
+
+        if ($category && $category != "all") {
+            $query->whereHas('category', function ($q) use ($category) {
+                $q->where('category', $category); // Adjust 'name' to the correct column in the categories table
+            });
+        }
+
+        // Paginate the results
+        $sizes = $query->orderBy("id", "desc")->paginate(10);
+
+        // Transform the paginated data using the resource collection
+        $data = SizeResource::collection($sizes);
+
+        // Return the response with meta information
         return response()->json([
-            "data" => SizeResource::collection(Size::all())
+            "data" => $data,
+            'meta' => [
+                'current_page' => $sizes->currentPage(),
+                'last_page' => $sizes->lastPage(),
+                'total' => $sizes->total(),
+            ],
         ]);
-
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -49,9 +77,12 @@ class SizeController extends Controller
             "size" => $request->size,
         ]);
 
-        return response()->json($size);
+        return response()->json([
+            'message' => 'Size created successfully',
+            'data' => new SizeResource($size)
+        ], 201);
 
-        // return new SizeResource($size);
+
 
     }
 
@@ -90,6 +121,20 @@ class SizeController extends Controller
      */
     public function destroy(Size $size)
     {
-        $this->sizeRepository->delete($size->id);
+
+        $count = $size->product->count();
+
+        if($count == 0){
+            $this->sizeRepository->delete($size->id);
+            return response()->json(['message' => 'Size deleted successfully']);
+        }else{
+            return response()->json([
+                "status" => 409,
+                "error" => "Conflict",
+                "message" => "Resource cannot be deleted due to existing dependencies."
+            ],409);
+        }
+
+
     }
 }

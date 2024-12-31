@@ -5,15 +5,18 @@ namespace App\Repositories;
 use App\Models\Payment;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentRepository extends BasicFunctions implements BaseRepository
 {
 
     protected $model;
+    protected $admin_id;
 
     function __construct()
     {
         $this->model = Payment::class;
+        $this->admin_id = Auth::user()->admin->id;
     }
 
     public function find($id){
@@ -28,7 +31,7 @@ class PaymentRepository extends BasicFunctions implements BaseRepository
         ]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Create",
             "type" => "Payment",
             "action" => "created payment ".$data["payment"]
@@ -43,7 +46,7 @@ class PaymentRepository extends BasicFunctions implements BaseRepository
         $payment = $this->find($data["id"]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Create",
             "type" => "Payment",
             "action" => "Update a payment ". $data["id"].
@@ -61,7 +64,8 @@ class PaymentRepository extends BasicFunctions implements BaseRepository
     }
 
     public function delete($id){
-
+        $payment = $this->find($id);
+        $payment->delete();
     }
 
 }

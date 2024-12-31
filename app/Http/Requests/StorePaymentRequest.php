@@ -22,7 +22,6 @@ class StorePaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'admin_id' => 'required|integer|exists:admins,id',
             'payment' => 'required|string|unique:payments,payment',
         ];
     }

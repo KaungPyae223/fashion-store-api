@@ -5,15 +5,18 @@ namespace App\Repositories;
 use App\Models\Color;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
+use Illuminate\Support\Facades\Auth;
 
 class ColorRepository extends BasicFunctions implements BaseRepository
 {
 
     protected $model;
+    protected $admin_id;
 
     function __construct()
     {
         $this->model = Color::class;
+        $this->admin_id = Auth::user()->admin->id;
     }
 
     public function find($id){
@@ -24,7 +27,7 @@ class ColorRepository extends BasicFunctions implements BaseRepository
         $color = $this->model::create($data);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Create",
             "type" => "Color",
             "action" => "Create a color ".$data["color"]
@@ -37,7 +40,7 @@ class ColorRepository extends BasicFunctions implements BaseRepository
         $color = $this->find($data["id"]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Update",
             "type" => "Color",
             "action" => "Update a color ".$color["color"]. " to ".$data["color"]
@@ -53,11 +56,6 @@ class ColorRepository extends BasicFunctions implements BaseRepository
     public function delete($id){
         $size = $this->find($id);
         $size->delete();
-        return response()->json(
-            [
-                "message" => "successfully deleted",
-                "status" => 200
-            ]
-        );
+       
     }
 }

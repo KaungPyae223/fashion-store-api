@@ -15,8 +15,20 @@ class TypeResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            "id" => $this->id,
+            "category_id" => $this->category_id,
+            "total_products" => $this->product->count(),
             "type" => $this->type,
-            "relative_category" => $this->category->category
+            "relative_category" => $this->category->category,
+            "relative_brand" => $this->product
+                ->map(function($product) {
+                    return [
+                        "brandName" => $product->brand->name,
+                        "brandID" => $product->brand->id,
+                    ];
+                })
+                ->unique('brandID') // Ensure distinct brands
+                ->values()
         ];
     }
 }

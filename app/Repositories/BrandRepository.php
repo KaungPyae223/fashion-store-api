@@ -5,14 +5,18 @@ namespace App\Repositories;
 use App\Models\Brand;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
+use Illuminate\Support\Facades\Auth;
 
 class BrandRepository extends BasicFunctions implements BaseRepository {
 
     protected $model;
+    protected $admin_id;
 
     function __construct()
     {
         $this->model = Brand::class;
+        $this->admin_id = Auth::user()->admin->id;
+
     }
 
     public function find($id){
@@ -29,7 +33,7 @@ class BrandRepository extends BasicFunctions implements BaseRepository {
         ]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Create",
             "type" => "Brand",
             "action" => "Create a brand ".$data["name"]
@@ -44,7 +48,7 @@ class BrandRepository extends BasicFunctions implements BaseRepository {
         $brand = $this->find($data["id"]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Update",
             "type" => "Brand",
             "action" => "Update a brand ".$brand->name. " to ".$data["name"]
@@ -58,7 +62,7 @@ class BrandRepository extends BasicFunctions implements BaseRepository {
 
     }
 
-    
+
 
     public function updateImage(array $data){
 
@@ -73,7 +77,7 @@ class BrandRepository extends BasicFunctions implements BaseRepository {
         ]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Update",
             "type" => "Brand",
             "action" => "Update a brand ". $brand->name . " photo"
@@ -91,12 +95,7 @@ class BrandRepository extends BasicFunctions implements BaseRepository {
 
         $brand->delete();
 
-        return response()->json(
-        [
-            "message" => "successfully delete the brand",
-            "status" => 200
-        ]
-        );
+        
 
     }
 }

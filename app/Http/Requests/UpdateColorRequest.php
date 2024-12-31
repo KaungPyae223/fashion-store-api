@@ -22,8 +22,7 @@ class UpdateColorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "admin_id" => "required|exists:admins,id",
-            "color" => "required|unique:colors,color,".$this->id,
+            "color" => "required|unique:colors,color,".$this->route('color')->id,
         ];
     }
 }

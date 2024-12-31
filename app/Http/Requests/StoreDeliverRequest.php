@@ -23,10 +23,9 @@ class StoreDeliverRequest extends FormRequest
     {
         return [
             "name" => ["required","string","unique:delivers,name"],
-            "email" => ["required","email"],
+            "email" => ["required","email","unique:delivers,email"],
             "phone" => ["required","string"],
             "address" => ["required","string"],
-            "admin_id" => ["required","integer","exists:admins,id"],
         ];
     }
 }
