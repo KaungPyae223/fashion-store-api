@@ -50,6 +50,16 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function allPayments(){
+
+        $payments = Payment::all()->map(function($payment){
+            return $payment->payment;
+
+        });
+
+        return response()->json($payments);
+    }
+
     /**
      * Show the form for creating a new resource.
      */

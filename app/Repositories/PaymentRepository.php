@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PaymentRepository extends BasicFunctions implements BaseRepository
 {
@@ -26,18 +27,34 @@ class PaymentRepository extends BasicFunctions implements BaseRepository
 
     public function create(array $data){
 
-        $payment = $this->model::create([
-            "payment" => $data["payment"],
-        ]);
 
-        $this->addAdminActivity([
-            "admin_id" => $this->admin_id,
-            "method" => "Create",
-            "type" => "Payment",
-            "action" => "created payment ".$data["payment"]
-        ]);
+        try{
 
-        return $payment;
+            DB::beginTransaction();
+
+            $payment = $this->model::create([
+                "payment" => $data["payment"],
+            ]);
+
+            $this->addAdminActivity([
+                "admin_id" => $this->admin_id,
+                "method" => "Create",
+                "type" => "Payment",
+                "action" => "created payment ".$data["payment"]
+            ]);
+
+            DB::commit();
+
+            return $payment;
+
+        }catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return $e;
+        }
+
+
 
     }
 
@@ -45,21 +62,36 @@ class PaymentRepository extends BasicFunctions implements BaseRepository
 
         $payment = $this->find($data["id"]);
 
-        $this->addAdminActivity([
-            "admin_id" => $this->admin_id,
-            "method" => "Create",
-            "type" => "Payment",
-            "action" => "Update a payment ". $data["id"].
-            $this->compareDiff("payment",$payment->payment,$data["payment"]).
-            $this->compareDiff("status",$payment->status,$data["status"])
-        ]);
+        try{
 
-        $payment->update([
-            "payment" => $data["payment"],
-            "status" => $data["status"]
-        ]);
+            DB::beginTransaction();
 
-        return $payment;
+            $this->addAdminActivity([
+                "admin_id" => $this->admin_id,
+                "method" => "Update",
+                "type" => "Payment",
+                "action" => "Update a payment ". $data["id"].
+                $this->compareDiff("payment",$payment->payment,$data["payment"]).
+                $this->compareDiff("status",$payment->status,$data["status"])
+            ]);
+
+            $payment->update([
+                "payment" => $data["payment"],
+                "status" => $data["status"]
+            ]);
+
+            DB::commit();
+
+            return $payment;
+
+        }catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return $e;
+        }
+
+
 
     }
 

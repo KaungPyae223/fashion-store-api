@@ -22,9 +22,40 @@ class AdminController extends Controller
         $this->adminRepository = $adminRepository;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        //
+
+        $searchTerm = $request->input('name');
+        $searchRole = $request->input('role');
+
+        $admins = Admin::query();
+
+        if ($searchTerm) {
+            $admins->whereHas('user', function ($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%');
+            });}
+
+        if ($searchRole && $searchRole != "all") {
+            $admins->whereHas('user', function ($q) use ($searchRole) {
+                $q->where('role', $searchRole);
+            });}
+
+
+
+        $admins = $admins->paginate(10);
+
+        $data = AdminResource::collection($admins);
+
+
+        return response()->json([
+            "data" => $data,
+            'meta' => [
+                'current_page' => $admins->currentPage(),
+                'last_page' => $admins->lastPage(),
+                'total' => $admins->total(),
+            ],
+        ]);
+
     }
 
     /**
@@ -33,7 +64,7 @@ class AdminController extends Controller
     public function create()
     {
         //
-        $admin = $this->adminRepository->create();
+
     }
 
     /**
@@ -41,19 +72,22 @@ class AdminController extends Controller
      */
     public function store(StoreAdminRequest $request)
     {
-        //
+
         $admin = $this->adminRepository->create([
             "name" => $request->name,
             "email" => $request->email,
             "role" => $request->role,
-            "password" => Hash::make($request->password),
+            "password" => Hash::make("Alexa123"),
             "photo" => $request->file("photo"),
             "phone" => $request->phone,
             "address" => $request->address,
-            "admin_id" => $request->admin_id,
         ]);
 
-        return new AdminResource($admin);
+        return response()->json([
+            'message' => 'Color created successfully',
+            'data' => new AdminResource($admin)
+        ], 201);
+
     }
 
     /**

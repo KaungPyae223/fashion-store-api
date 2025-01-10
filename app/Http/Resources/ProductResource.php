@@ -24,6 +24,7 @@ class ProductResource extends JsonResource
             "category" => $this->category->category,
             "brand" => $this->brand->name,
             "type" => $this->type->type,
+
             "color" => $this->color->color,
             "sizes" => $this->size->map(function($size){
                return [

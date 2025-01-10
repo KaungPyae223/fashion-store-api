@@ -23,8 +23,7 @@ class UpdateOrderRequest extends FormRequest
     {
         return [
             "delivery_id" => "required|integer|exists:delivers,id",
-            "admin_id" => "required|integer|exists:admins,id",
-            "status" => "required|in:prepare,delivered",
+            
         ];
     }
 }

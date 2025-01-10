@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Repositories\CustomerRepository;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class CustomerController extends Controller
@@ -22,9 +23,32 @@ class CustomerController extends Controller
         $this->customerRepository = $customerRepository;
      }
 
-    public function index()
+    public function index(Request $request)
     {
-        //
+
+        $searchTerm = $request->input('q');
+
+
+        $query = Customer::query();
+
+        if($searchTerm) {
+            $query->whereHas(
+                'user', function ($q) use ($searchTerm) {$q->where('name', 'like', '%' . $searchTerm . '%')->orWhere('email', 'like', '%' . $searchTerm . '%');})
+                ->orWhere('phone', 'like', '%' . $searchTerm . '%');
+        }
+
+        $product = $query->paginate(10);
+
+        $data = CustomerResource::collection($product);
+
+        return response()->json([
+            "data" => $data,
+            'meta' => [
+                'current_page' => $product->currentPage(),
+                'last_page' => $product->lastPage(),
+                'total' => $product->total(),
+            ],
+        ]);
 
 
     }
@@ -44,7 +68,7 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-       
+
 
     }
 
@@ -54,6 +78,38 @@ class CustomerController extends Controller
     public function show(Customer $customer)
     {
         return new CustomerResource($customer);
+    }
+
+    public function customerDetails($id){
+
+        $customer = Customer::find($id);
+
+        $customer_orders = $customer->orders()->get();
+
+        return response()->json([
+            "customer" => [
+                "name" => $customer->user->name,
+                "email" => $customer->user->email,
+                "phone" => $customer->phone,
+                "address" => $customer->address,
+                "city" => $customer->city,
+                "township" => $customer->township,
+                "zipCode" => $customer->zip_code
+            ],
+            "customer_orders" => $customer_orders->map(function($order){
+                return [
+                    "id" => $order->id,
+                    "date" => $order->created_at,
+                    "total_qty" => $order->total_qty,
+                    "total_products" => $order->orderDetails()->count(),
+                    "total_amount" => $order->total_price,
+                    "tax" => $order->tax,
+                    "payment" => $order->payment->payment,
+                    "status" => $order->status,
+                ];
+            })
+        ]);
+
     }
 
     /**
@@ -88,6 +144,6 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
-        //
+
     }
 }

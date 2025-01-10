@@ -27,4 +27,25 @@ class Order extends Model
         "note",
         "status",
     ];
+
+    public function orderDetails(){
+        return $this->hasMany(OrderDetails::class,"order_id","id");
+    }
+
+    public function customer(){
+        return $this->belongsTo(Customer::class,"customer_id","id");
+    }
+
+    public function admin(){
+        return $this->belongsTo(Admin::class,"admin_id","id");
+    }
+
+    public function delivery(){
+        return $this->belongsTo(Deliver::class,"delivery_id","id");
+    }
+
+    public function payment(){
+        return $this->belongsTo(Payment::class,"payment_id","id");
+    }
+
 }

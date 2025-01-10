@@ -10,12 +10,15 @@ use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerQuestionController;
 use App\Http\Controllers\DeliverController;
+use App\Http\Controllers\HeroController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDetailsController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPhotoController;
 use App\Http\Controllers\ProductSizeController;
+use App\Http\Controllers\PublicController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\TypeController;
@@ -31,7 +34,8 @@ Route::prefix("v1")->group(function () {
         Route::post('/login', 'login');
     });
 
-    Route::middleware(['auth:sanctum', 'user-role:Product Admin'])->group(function () {
+    Route::middleware(['auth:sanctum', 'user-role:Product Management'])->group(function () {
+
         Route::apiResource('size',SizeController::class);
         Route::apiResource("color",ColorController::class);
         Route::apiResource('type',TypeController::class);
@@ -41,8 +45,20 @@ Route::prefix("v1")->group(function () {
 
         Route::get('category',[CategoryController::class,"index"]);
 
-        Route::get("filter-data",[ProductController::class,"getAllFilterData"]);
-        Route::get("product-properties/{id}",[ProductController::class,"getProductProperties"]);
+
+        Route::prefix("product")->group(function () {
+
+            Route::get("trash",[ProductController::class,"productTrash"]);
+            Route::get("admin-product-info/{id}",[ProductController::class,"adminProductDetails"]);
+            Route::put("delete/{id}", [ProductController::class, "deleteProduct"]);
+            Route::put("restore/{id}", [ProductController::class, "restoreProduct"]);
+            Route::post("details-photo-update/{id}", [ProductController::class, "updateDetailsPhoto"]);
+            Route::post("cover-update/{id}", [ProductController::class, "updateCoverPhoto"]);
+            Route::get("details-data/{id}", [ProductController::class, "productUpdateData"]);
+            Route::get("filter-data", [ProductController::class, "getAllFilterData"]);
+            Route::get("properties/{id}", [ProductController::class, "getProductProperties"]);
+
+        });
         Route::apiResource("product",ProductController::class)->except(["destroy"]);
 
     });
@@ -55,10 +71,28 @@ Route::prefix("v1")->group(function () {
             Route::put("answer-question","answerQuestion");
 
         });
+
+        Route::get("customer-order",[OrderController::class,"customerOrder"]);
+        Route::get("order/order-history/{id}",[OrderController::class,"orderHistoryDetails"]);
+
+        Route::get("customer-list",[CustomerController::class,"index"]);
+        Route::get("customer-details/{id}",[CustomerController::class,"customerDetails"]);
+
+        Route::get('all-payment',[PaymentController::class,"allPayments"]);
+
     });
 
     Route::middleware(['auth:sanctum', 'user-role:Order Management'])->group(function () {
 
+        Route::controller(OrderController::class)->group(function () {
+            Route::get('order/order-history/{id}', 'orderHistoryDetails');
+            Route::get('delivery', 'deliverData');
+            Route::get('order/order-history', 'orderHistory');
+            Route::get('order/package/{id}', 'packagingData');
+            Route::put('order/change-status/{id}', 'update');
+            Route::get('order-list', 'index');
+            Route::get('order-history', 'orderHistory');
+        });
         Route::apiResource("deliver",DeliverController::class)->only(["index"]);
 
     });
@@ -70,89 +104,20 @@ Route::prefix("v1")->group(function () {
 
     });
 
+    Route::middleware(['auth:sanctum', 'user-role:System Admin'])->group(function () {
 
+        Route::get("admin-monitoring",[AdminMonitoringController::class,"index"]);
+
+        Route::put("ads-change",[PageController::class,"updateADS"]);
+        Route::post("create-carousel",[HeroController::class,"store"]);
+
+        Route::post('admin/change-photo',[AdminController::class,"updatePhoto"]);
+        Route::apiResource('admin',AdminController::class)->except(["destroy"]);
+
+    });
+
+    Route::get("ads",[PublicController::class,"getHeaderAds"]);
+    Route::get("carousels",[PublicController::class,"getCarousels"]);
 
 });
 
-
-
-
-
-
-
-
-
-
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-Route::put('user/change-password',[UserController::class,"updatePassword"]);
-
-// Customer
-Route::apiResource('customer',CustomerController::class) -> only(["show","store","update","index"]);
-
-// Admin
-Route::post('admin/change-photo',[AdminController::class,"updatePhoto"]);
-Route::apiResource('admin',AdminController::class)->only(["show","store","update","index"]);
-
-// Custom Question
-Route::post('ask-question',[CustomerQuestionController::class,"askQuestion"]);
-Route::post('answer-question',[CustomerQuestionController::class,"answerQuestion"]);
-Route::get('questions',[CustomerQuestionController::class,"getAllQuestions"]);
-Route::get('answers',[CustomerQuestionController::class,"getAllAnswers"]);
-Route::get('questions/{id}',[CustomerQuestionController::class,"getAllCustomerQuestions"]);
-Route::get('answer/{id}',[CustomerQuestionController::class,"getAllCustomerAnswers"]);
-Route::delete('questions/{id}',[CustomerQuestionController::class,"destroy"]);
-
-
-
-
-
-
-Route::apiResource('category',CategoryController::class) -> only(["index"]);
-
-
-// Category
-
-
-
-// Type
-
-// Brand
-
-
-
-
-// Admin Activity
-Route::apiResource('activity',AdminMonitoringController::class)->only(["index"]);
-
-// Blog
-Route::post("blog/update-image",[BlogController::class,"updatePhoto"]);
-Route::apiResource("blog",BlogController::class);
-
-// Product
-Route::post("product/update-cover",[ProductController::class,"updatePhoto"]);
-Route::put("product/restore",[ProductController::class,"restoreProduct"]);
-Route::put("product/delete",[ProductController::class,"deleteProduct"]);
-
-
-// Product Sizes
-Route::apiResource("product-size",ProductSizeController::class)->only(["store","update"]);
-
-// Product Payment
-
-// Delivery
-
-// Order
-Route::apiResource("order",OrderController::class)->only(["store","update"]);
-
-// Order Details
-Route::apiResource("order-details",OrderDetailsController::class)->only(["store"]);
-
-// Review
-Route::apiResource("review",ReviewController::class)->only(["store","destroy"]);
-
-// WishList
-Route::apiResource("wishlist",WishlistController::class)->only(["store","destroy"]);

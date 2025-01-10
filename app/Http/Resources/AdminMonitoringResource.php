@@ -16,6 +16,7 @@ class AdminMonitoringResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            "id" => $this->id,
             "name" => $this->admin->user->name,
             "photo" => $this->admin->photo,
             "email" => $this->admin->user->email,

@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BrandRepository extends BasicFunctions implements BaseRepository {
 
@@ -27,19 +28,36 @@ class BrandRepository extends BasicFunctions implements BaseRepository {
 
         $imageURL = $this->storePhoto($data["photo"],"brandImage");
 
-        $brand = $this->model::create([
-            "name" => $data["name"],
-            "photo" => $imageURL
-        ]);
 
-        $this->addAdminActivity([
-            "admin_id" => $this->admin_id,
-            "method" => "Create",
-            "type" => "Brand",
-            "action" => "Create a brand ".$data["name"]
-        ]);
+        try{
 
-        return $brand;
+            DB::beginTransaction();
+
+            $brand = $this->model::create([
+                "name" => $data["name"],
+                "photo" => $imageURL
+            ]);
+
+            $this->addAdminActivity([
+                "admin_id" => $this->admin_id,
+                "method" => "Create",
+                "type" => "Brand",
+                "action" => "Create a brand ".$data["name"]
+            ]);
+
+            DB::commit();
+
+            return $brand;
+
+
+        }catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return $e;
+        }
+
+
 
     }
 
@@ -47,18 +65,32 @@ class BrandRepository extends BasicFunctions implements BaseRepository {
 
         $brand = $this->find($data["id"]);
 
-        $this->addAdminActivity([
-            "admin_id" => $this->admin_id,
-            "method" => "Update",
-            "type" => "Brand",
-            "action" => "Update a brand ".$brand->name. " to ".$data["name"]
-        ]);
+        try{
 
-        $brand->update([
-            "name" => $data["name"]
-        ]);
+            DB::beginTransaction();
 
-        return $brand;
+            $this->addAdminActivity([
+                "admin_id" => $this->admin_id,
+                "method" => "Update",
+                "type" => "Brand",
+                "action" => "Update a brand ".$brand->name. " to ".$data["name"]
+            ]);
+
+            $brand->update([
+                "name" => $data["name"]
+            ]);
+
+            DB::commit();
+
+            return $brand;
+
+
+        }catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return $e;
+        }
 
     }
 
@@ -68,22 +100,37 @@ class BrandRepository extends BasicFunctions implements BaseRepository {
 
         $brand = $this->find($data["id"]);
 
-        $this->deletePhoto($brand->photo);
+        try{
 
-        $imageURL = $this->storePhoto($data["photo"],"adminImage");
+            DB::beginTransaction();
 
-        $brand->update([
-            "photo" => $imageURL
-        ]);
+            $this->deletePhoto($brand->photo);
 
-        $this->addAdminActivity([
-            "admin_id" => $this->admin_id,
-            "method" => "Update",
-            "type" => "Brand",
-            "action" => "Update a brand ". $brand->name . " photo"
-        ]);
+            $imageURL = $this->storePhoto($data["photo"],"adminImage");
 
-        return $brand;
+            $brand->update([
+                "photo" => $imageURL
+            ]);
+
+            $this->addAdminActivity([
+                "admin_id" => $this->admin_id,
+                "method" => "Update",
+                "type" => "Brand",
+                "action" => "Update a brand ". $brand->name . " photo"
+            ]);
+
+            DB::commit();
+
+            return $brand;
+
+        }catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return $e;
+        }
+
+
 
     }
 
@@ -95,7 +142,7 @@ class BrandRepository extends BasicFunctions implements BaseRepository {
 
         $brand->delete();
 
-        
+
 
     }
 }

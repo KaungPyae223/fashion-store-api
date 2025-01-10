@@ -5,15 +5,18 @@ namespace App\Repositories;
 use App\Models\Order;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
+use Illuminate\Support\Facades\Auth;
 
 class OrderRepository extends BasicFunctions implements BaseRepository
 {
 
     protected $model;
+    protected $admin_id;
 
     function __construct()
     {
         $this->model = Order::class;
+        $this->admin_id = Auth::user()->admin->id;
     }
 
     public function find($id){
@@ -45,8 +48,8 @@ class OrderRepository extends BasicFunctions implements BaseRepository
 
         $order->update([
             "delivery_id" => $data["delivery_id"],
-            "admin_id" => $data["admin_id"],
-            "status" => $data["status"]
+            "admin_id" => $this->admin_id,
+            "status" => "delivered"
         ]);
 
         return $order;

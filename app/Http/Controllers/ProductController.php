@@ -62,9 +62,63 @@ class ProductController extends Controller
             });
         }
 
-
-
         $query->where("is_delete",false);
+
+        // Paginate the results
+        $products = $query->orderBy("id", "desc")->paginate(10);
+
+        // Transform the paginated data using the resource collection
+        $data = ProductResource::collection($products);
+
+        // Return the response with meta information
+        return response()->json([
+            "data" => $data,
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'total' => $products->total(),
+            ],
+        ]);
+    }
+
+    public function productTrash(Request $request)
+    {
+        $searchTerm = $request->input('q');
+        $searchBrand = $request->input('brand');
+        $searchStatus = $request->input('status');
+        $searchType = $request->input('type');
+        $searchCategory = $request->input('category');
+
+
+        $query = Product::query();
+
+        if ($searchTerm) {
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        if ($searchBrand && $searchBrand != "all") {
+            $query->whereHas('brand', function ($q) use ($searchBrand) {
+                $q->where('name', $searchBrand);
+            });
+        }
+
+        if ($searchStatus && $searchStatus != "all") {
+            $query->where('status', $searchStatus);
+        }
+
+        if ($searchType && $searchType != "all") {
+            $query->whereHas('type', function ($q) use ($searchType) {
+                $q->where('type', $searchType);
+            });
+        }
+
+        if ($searchCategory && $searchCategory != "all") {
+            $query->whereHas('category', function ($q) use ($searchCategory) {
+                $q->where('category', $searchCategory);
+            });
+        }
+
+        $query->where("is_delete",true);
 
         // Paginate the results
         $products = $query->orderBy("id", "desc")->paginate(10);
@@ -192,9 +246,96 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+
+     public function adminProductDetails($id){
+
+        $baseProduct = $this->productRepository->find($id);
+
+        $product = [
+            "id" => $baseProduct->id,
+            "type" => $baseProduct->type->type,
+            "brand" =>  $baseProduct->brand->name,
+            "category" => $baseProduct->category->category,
+            "color" => $baseProduct->color->color,
+            "sizes" => $baseProduct->size->map(function($el){
+                return [
+                    "id" => $el->id,
+                    "name" => $el->size
+                ];
+            }),
+            "name" => $baseProduct->name,
+            "cover_photo" => $baseProduct->cover_photo,
+            "price" => $baseProduct->price,
+            "description" => $baseProduct->description,
+            "status" => $baseProduct->status,
+            "gender" => $baseProduct->gender,
+            "created_at" => $baseProduct->created_at,
+            "updated_at" => $baseProduct->updated_at,
+            "product_images" => $baseProduct->productPhoto->map(function ($image) {
+                return [
+                    "url" => $image->Photo,
+                ];
+            }),
+        ];
+
+        return response()->json([
+            "data" => $product,
+        ], 200);
+
+     }
+
+     public function productUpdateData($id){
+
+        $baseProduct = $this->productRepository->find($id);
+
+        $product = [
+            "id" => $baseProduct->id,
+            "type" => [
+                "id" => $baseProduct->type_id,
+                "name" => $baseProduct->type->type
+            ],
+            "brand" => [
+                "id" => $baseProduct->brand_id,
+                "name" => $baseProduct->brand->name
+            ],
+            "category_id" => $baseProduct->category_id,
+            "color" =>[
+                "id" => $baseProduct->color_id,
+                "name" => $baseProduct->color->color
+            ],
+            "sizes" => $baseProduct->size->map(function($el){
+                return [
+                    "id" => $el->id,
+                    "name" => $el->size
+                ];
+            }),
+            "name" => $baseProduct->name,
+            "cover_photo" => $baseProduct->cover_photo,
+            "price" => $baseProduct->price,
+            "description" => $baseProduct->description,
+            "status" => $baseProduct->status,
+            "gender" => $baseProduct->gender,
+            "is_delete" => $baseProduct->is_delete,
+            "created_at" => $baseProduct->created_at,
+            "updated_at" => $baseProduct->updated_at,
+            "product_images" => $baseProduct->productPhoto->map(function ($image) {
+                return [
+                    "url" => $image->Photo,
+                ];
+            }),
+        ];
+
+        return response()->json([
+            "data" => $product,
+        ], 200);
+
+     }
+
+
+    public function show($id)
     {
-        return new ProductResource($product);
+
+
     }
 
     /**
@@ -205,19 +346,33 @@ class ProductController extends Controller
         //
     }
 
-    public function updatePhoto(Request $request)
+    public function updateCoverPhoto(Request $request,$id)
     {
 
         $request->validate([
-            "id" => "required|exists:products,id",
             "cover_photo" => "required|image|mimes:jpeg,png,jpg,gif",
-            "admin_id" => "required|exists:admins,id"
         ]);
 
-        $product = $this->productRepository->updatePhoto([
-            "id" => $request->id,
+        $product = $this->productRepository->updateCoverPhoto([
+            "id" => $id,
             "cover_photo" => $request->file("cover_photo"),
-            "admin_id" => $request->admin_id
+        ]);
+
+        return new ProductResource($product);
+
+    }
+
+    public function updateDetailsPhoto(Request $request,$id)
+    {
+
+
+        $request->validate([
+            "photos.*" => "required|image|mimes:jpeg,png,jpg,gif",
+        ]);
+
+        $product = $this->productRepository->updateDetailsPhoto([
+            "id" => $id,
+            "details_photos" => $request->file("photos"),
         ]);
 
         return new ProductResource($product);
@@ -230,7 +385,7 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product)
     {
 
-        $product = $this->productRepository->update([
+        $updatedProduct = $this->productRepository->update([
             "id" => $product->id,
             "type_id" => $request->type_id,
             "brand_id" => $request->brand_id,
@@ -241,8 +396,7 @@ class ProductController extends Controller
             "description" => $request->description,
             "status" => $request->status,
             "gender" => $request->gender,
-            "admin_id" => $request->admin_id,
-            // "product_size" => $request->size_id,
+            "size_id" => $request->size_id,
 
         ]);
 
@@ -258,42 +412,22 @@ class ProductController extends Controller
 
     }
 
-    public function deleteProduct(Request $request)
+    public function deleteProduct($id)
     {
 
-        $product = $this->productRepository->find($request->id);
-
-        $product->update([
-            "is_delete" => true
-        ]);
-
-        $this->productRepository->addAdminActivity([
-            "admin_id" => $request->admin_id,
-            "method" => "Delete",
-            "type" => "Product",
-            "action" => "Delete a product ".$product->name
-        ]);
+        $product = $this->productRepository->delete($id);
 
         return response()->json(["message" => "Product deleted successfully"]);
+
     }
 
-    public function restoreProduct(Request $request)
+    public function restoreProduct($id)
     {
 
-        $product = $this->productRepository->find($request->id);
-
-        $product->update([
-            "is_delete" => false
-        ]);
-
-        $this->productRepository->addAdminActivity([
-            "admin_id" => $request->admin_id,
-            "method" => "Delete",
-            "type" => "Product",
-            "action" => "Restore a product ".$product->name
-        ]);
+        $product = $this->productRepository->restoreProduct($id);
 
         return response()->json(["message" => "Product restore successfully"]);
+
     }
 
 }

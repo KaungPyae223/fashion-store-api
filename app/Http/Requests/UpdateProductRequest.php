@@ -22,7 +22,6 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "admin_id" => "required|exists:admins,id",
             "type_id" => "required|exists:types,id",
             "brand_id" => "required|exists:brands,id",
             "category_id" => "required|exists:categories,id",
@@ -32,7 +31,7 @@ class UpdateProductRequest extends FormRequest
             "description" => "required",
             "status" => "required|in:public,private",
             "gender" => "required|in:Men,Women,All",
-            // "size_id" => "required|array",
+            "size_id" => "required",
         ];
     }
 }

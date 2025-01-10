@@ -16,7 +16,7 @@ class AdminSeeder extends Seeder
         DB::table('admins')->insert(
         [
             'user_id' => '1',
-            'photo' => 'https://www.shutterstock.com/image-vector/user-icon-trendy-flat-style-600nw-418179856.jpg',
+            'photo' => '',
             "phone"=>"1234567890",
             "address"=>"1234 Admin Street",
             "retired"=>false

@@ -1,5 +1,6 @@
 <?php
 
+use Database\Seeders\PageSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,9 +14,12 @@ return new class extends Migration
     {
         Schema::create('pages', function (Blueprint $table) {
             $table->id();
-            $table->json("notification");
+            $table->longText("ads");
             $table->timestamps();
         });
+
+        (new PageSeeder())->run();
+
     }
 
     /**

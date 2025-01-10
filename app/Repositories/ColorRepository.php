@@ -6,6 +6,7 @@ use App\Models\Color;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ColorRepository extends BasicFunctions implements BaseRepository
 {
@@ -24,38 +25,70 @@ class ColorRepository extends BasicFunctions implements BaseRepository
     }
 
     public function create(array $data){
-        $color = $this->model::create($data);
 
-        $this->addAdminActivity([
-            "admin_id" => $this->admin_id,
-            "method" => "Create",
-            "type" => "Color",
-            "action" => "Create a color ".$data["color"]
-        ]);
+        try{
 
-        return $color;
+            DB::beginTransaction();
+
+            $color = $this->model::create($data);
+
+            $this->addAdminActivity([
+                "admin_id" => $this->admin_id,
+                "method" => "Create",
+                "type" => "Color",
+                "action" => "Create a color ".$data["color"]
+            ]);
+
+            DB::commit();
+
+            return $color;
+
+        }catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return $e;
+        }
+
+
     }
 
     public function update(array $data){
         $color = $this->find($data["id"]);
 
-        $this->addAdminActivity([
-            "admin_id" => $this->admin_id,
-            "method" => "Update",
-            "type" => "Color",
-            "action" => "Update a color ".$color["color"]. " to ".$data["color"]
-        ]);
+        try{
 
-        $color->update([
-            "color" => $data["color"],
-        ]);
+            DB::beginTransaction();
 
-        return $color;
+            $this->addAdminActivity([
+                "admin_id" => $this->admin_id,
+                "method" => "Update",
+                "type" => "Color",
+                "action" => "Update a color ".$color["color"]. " to ".$data["color"]
+            ]);
+
+            $color->update([
+                "color" => $data["color"],
+            ]);
+
+            DB::commit();
+
+            return $color;
+
+        }catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return $e;
+        }
+
+
+
     }
 
     public function delete($id){
         $size = $this->find($id);
         $size->delete();
-       
+
     }
 }

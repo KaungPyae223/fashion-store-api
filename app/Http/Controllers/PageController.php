@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorepageRequest;
 use App\Http\Requests\UpdatepageRequest;
+use App\Repositories\PageRepository;
 use App\Models\page;
 
 class PageController extends Controller
@@ -11,9 +12,17 @@ class PageController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+     protected $pageRepository;
+
+     function __construct(PageRepository $pageRepository){
+         $this->pageRepository = $pageRepository;
+     }
+
+
     public function index()
     {
-        //
+
     }
 
     /**
@@ -39,6 +48,12 @@ class PageController extends Controller
     {
         //
     }
+
+    public function updateADS (StorepageRequest $request){
+        return $this->pageRepository->updateADS($request->ads);
+    }
+
+    
 
     /**
      * Show the form for editing the specified resource.
