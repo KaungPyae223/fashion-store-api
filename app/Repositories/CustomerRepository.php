@@ -5,6 +5,9 @@ namespace App\Repositories;
 use App\Models\Customer;
 use App\Models\User;
 use App\Repositories\Contract\BaseRepository;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerRepository implements BaseRepository
 {
@@ -41,19 +44,36 @@ class CustomerRepository implements BaseRepository
     }
 
     public function update(array $data){
-        $user = $this->findUser($data["user_id"]);
-        $user->update(["name" => $data["name"]]);
 
-        $customer = $this->find($data["id"]);
-        $customer->update([
-            "phone" => $data["phone"],
-            "city" => $data["city"],
-            "township" => $data["township"],
-            "zip_code" => $data["zip_code"],
-            "address" => $data["address"],
-        ]);
+        try{
 
-        return $customer;
+            DB::beginTransaction();
+
+
+            $user = Auth::user();
+
+            if (!Hash::check($data["password"], $user->password)) {
+                return response()->json(['message' => 'Password is incorrect'], 401);
+            }
+
+            $user->update(["name" => $data["name"]]);
+
+            $customer = $user->customer;
+            $customer->update([
+                "phone" => $data["phone"],
+                "address" => $data["address"],
+            ]);
+
+            DB::commit();
+
+            return $customer;
+
+        }catch(\Exception $e) {
+            DB::rollBack();
+            return $e;
+        }
+
+
     }
 
     public function delete($id){

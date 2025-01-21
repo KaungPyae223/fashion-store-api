@@ -12,7 +12,8 @@ class Type extends Model
 
     protected $fillable = [
         "type",
-        "category_id"
+        "category_id",
+        "gender"
     ];
 
     public function category() {

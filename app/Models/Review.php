@@ -17,4 +17,8 @@ class Review extends Model
         'comment',
     ];
 
+    public function customer(){
+        return $this->belongsTo(Customer::class,"customer_id","id");
+    }
+
 }

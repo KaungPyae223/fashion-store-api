@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-
-
     public function register(RegisterRequest $request){
 
         $user = User::create([
@@ -32,7 +30,8 @@ class AuthController extends Controller
 
     }
 
-    public function login(LoginRequest $request)
+
+    public function LogIn(LoginRequest $request)
     {
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(['message' => 'Invalid credentials'], 401);
@@ -41,11 +40,42 @@ class AuthController extends Controller
         $user = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
+
         return response()->json([
             'token' => $token,
-            'user' => $user
-        ]);
+            'status' => 200
+        ],200);
     }
 
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Logged out successfully']);
+    }
+
+    public function checkEmail(Request $request){
+
+        $email = $request->input("email");
+
+        $user = User::where('email', $email)->first();
+
+        if($user){
+
+            if($user->role == "Customer"){
+                return response()->json([
+                    "status" => "logIn"
+                ]);
+            }else{
+                return response()->json([
+                    "status" => "admin"
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "register"
+            ]);
+        }
+
+    }
 
 }

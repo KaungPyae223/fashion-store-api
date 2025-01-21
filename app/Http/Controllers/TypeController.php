@@ -26,12 +26,16 @@ class TypeController extends Controller
     {
         $searchTerm = $request->input('q');
         $category = $request->input('category');
-
+        $gender = $request->input("gender");
 
         $query = Type::query();
 
         if ($searchTerm) {
             $query->where('type', 'like', '%' . $searchTerm . '%');
+        }
+
+        if ($gender && $gender != "All"){
+            $query->where("gender",$gender)->orWhere("gender","All");
         }
 
         if ($category && $category != "all") {
@@ -73,6 +77,7 @@ class TypeController extends Controller
 
         $type = $this->typeRepository->create([
             "category_id" => $request->category_id,
+            "gender" => $request->gender,
             "type" => $request->type,
         ]);
 
@@ -106,6 +111,7 @@ class TypeController extends Controller
     {
         $type = $this->typeRepository->update([
             "id" => $type->id,
+            "gender" => $request->gender,
             "category_id" => $request->category_id,
             "type" => $request->type,
         ]);

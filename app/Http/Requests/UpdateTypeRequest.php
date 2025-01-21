@@ -23,7 +23,8 @@ class UpdateTypeRequest extends FormRequest
     {
         return [
             "type" => "required",
-            "category_id" => "required|exists:categories,id"
+            "category_id" => "required|exists:categories,id",
+            "gender" => "required|in:Men,Women,All",
         ];
     }
 }

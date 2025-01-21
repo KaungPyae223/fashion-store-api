@@ -22,7 +22,6 @@ class StoreCustomerQuestionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "customer_id" => "required|exists:customers,id",
             "question" => "required"
         ];
     }

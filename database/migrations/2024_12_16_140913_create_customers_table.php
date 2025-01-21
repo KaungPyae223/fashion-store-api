@@ -15,9 +15,6 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger("user_id");
             $table->string("phone")->nullable();
-            $table->string("city")->nullable();
-            $table->string("township")->nullable();
-            $table->integer("zip_code")->nullable();
             $table->longText("address")->nullable();
             $table->timestamps();
         });

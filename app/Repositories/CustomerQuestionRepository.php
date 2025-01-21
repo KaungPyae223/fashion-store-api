@@ -20,10 +20,7 @@ class CustomerQuestionRepository {
         return $this->model::find($id);
     }
 
-    public function askQuestion (array $data){
-        $question = $this->model::create($data);
-        return $question;
-    }
+
 
     public function answerQuestion (array $data){
 

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger("category_id");
             $table->string("type");
+            $table->enum("gender",["Men","Women","All"]);
             $table->timestamps();
         });
     }

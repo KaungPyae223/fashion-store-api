@@ -22,13 +22,11 @@ class UpdateAdminRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "admin_id" => "required|exists:admins,id",
-            "id" => "required|exists:admins,id",
             "name" => "required",
             "role" => "required",
+            "email" => "required|email|unique:users,email," . $this->route('admin'),
             "phone" => "required",
             "address" => "required",
-            "retired" => "required|boolean"
         ];
     }
 }

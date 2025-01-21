@@ -6,7 +6,9 @@ use App\Http\Requests\StoreAdminMonitoringRequest;
 use App\Http\Requests\UpdateAdminMonitoringRequest;
 use App\Http\Resources\AdminMonitoringResource;
 use App\Models\AdminMonitoring;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMonitoringController extends Controller
 {
@@ -38,9 +40,51 @@ class AdminMonitoringController extends Controller
                     ->whereYear('created_at', '=', date('Y', strtotime($time)));
         }
 
+        $query->orderBy("created_at","desc");
+
         $query = $query->paginate(10);
 
         $activities = AdminMonitoringResource::collection($query);
+
+        return response()->json([
+            "data" => $activities,
+            'meta' => [
+                'current_page' => $query->currentPage(),
+                'last_page' => $query->lastPage(),
+                'total' => $query->total(),
+            ],
+            "status" => 200,
+        ]);
+
+    }
+
+    public function adminActivity(Request $request){
+
+        $id =  Auth::user()->admin->id;
+
+
+        $time = $request->input("time");
+
+        $query = AdminMonitoring::query()->where("admin_id", $id);
+
+        if (preg_match('/^\d{4}-\d{2}$/', $time)) {
+            $query->whereMonth('created_at', '=', date('m', strtotime($time)))
+                    ->whereYear('created_at', '=', date('Y', strtotime($time)));
+        }
+
+        $query->orderBy("created_at","desc");
+
+        $query = $query->paginate(15);
+
+        $activities = $query->map(function($activity){
+            return [
+                "id" => $activity->id,
+                "method" => $activity->method,
+                "type" => $activity->type,
+                "activity" => $activity->action,
+                "created_at" => Carbon::parse($activity->created_at)->diffForHumans(),
+            ];
+        });
 
         return response()->json([
             "data" => $activities,

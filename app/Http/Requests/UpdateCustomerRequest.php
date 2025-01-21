@@ -24,10 +24,8 @@ class UpdateCustomerRequest extends FormRequest
         return [
             "name" => "required|string",
             "phone" => "required",
-            "city" => "required",
-            "township" => "required",
             "address" => "required",
-            "user_id" => "required|exists:users,id"
+            "password" => "required",
         ];
     }
 }

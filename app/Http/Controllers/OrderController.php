@@ -287,7 +287,13 @@ class OrderController extends Controller
     public function store(StoreOrderRequest $request)
     {
         $order = $this->orderRepository->create($request->validated());
-        return new OrderResource($order);
+
+        return response()->json([
+            'message' => 'Order successfully',
+            'data' => new OrderResource($order),
+            "status" => 201
+        ], 201);
+
     }
 
     /**

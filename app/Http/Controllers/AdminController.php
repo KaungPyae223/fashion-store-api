@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\StoreAdminRequest;
 use App\Http\Requests\UpdateAdminRequest;
 use App\Http\Resources\AdminResource;
@@ -22,6 +23,8 @@ class AdminController extends Controller
         $this->adminRepository = $adminRepository;
     }
 
+
+
     public function index(Request $request)
     {
 
@@ -39,8 +42,6 @@ class AdminController extends Controller
             $admins->whereHas('user', function ($q) use ($searchRole) {
                 $q->where('role', $searchRole);
             });}
-
-
 
         $admins = $admins->paginate(10);
 
@@ -63,9 +64,34 @@ class AdminController extends Controller
      */
     public function create()
     {
-        //
+
+
 
     }
+
+    public function AdminData(){
+
+        $admin = $this->adminRepository->getAdmin();
+
+        return response()->json($admin);
+
+    }
+
+
+    public function changePassword(ChangePasswordRequest $request)
+    {
+        $user = $request->user();
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['message' => 'Old password is incorrect'], 401);
+        }
+
+        $user->update(['password' => Hash::make($request->new_password)]);
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Password changed successfully']);
+    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -77,7 +103,7 @@ class AdminController extends Controller
             "name" => $request->name,
             "email" => $request->email,
             "role" => $request->role,
-            "password" => Hash::make("Alexa123"),
+            "password" => Hash::make("admin"),
             "photo" => $request->file("photo"),
             "phone" => $request->phone,
             "address" => $request->address,
@@ -109,16 +135,15 @@ class AdminController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateAdminRequest $request, Admin $admin)
+    public function update(UpdateAdminRequest $request,$id)
     {
         $admin = $this->adminRepository->update([
-            "id" => $request->id,
+            "id" => $id,
             "name" => $request->name,
             "role" => $request->role,
+            "email" => $request->email,
             "phone" => $request->phone,
             "address" => $request->address,
-            "admin_id" => $request->admin_id,
-            "retired" => $request->retired,
         ]);
 
         return new AdminResource($admin);
@@ -128,7 +153,6 @@ class AdminController extends Controller
     public function updatePhoto (Request $request){
 
         $request->validate([
-            "admin_id" => "required|exists:admins,id",
             "id" => "required|exists:admins,id",
             "photo" => "required|image|mimes:jpeg,png,jpg,gif",
         ]);

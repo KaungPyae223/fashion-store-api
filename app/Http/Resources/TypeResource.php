@@ -19,6 +19,7 @@ class TypeResource extends JsonResource
             "category_id" => $this->category_id,
             "total_products" => $this->product->count(),
             "type" => $this->type,
+            "gender" => $this->gender,
             "relative_category" => $this->category->category,
             "relative_brand" => $this->product
                 ->map(function($product) {

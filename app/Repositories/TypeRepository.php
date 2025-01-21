@@ -68,12 +68,14 @@ class TypeRepository extends BasicFunctions implements BaseRepository
                 "action" =>
                     "Update a type ".$data["id"]." data ".
                     $this->compareDiff("category_id",$type["category_id"],$data["category_id"]).
+                    $this->compareDiff("gender",$type["gender"],$data["gender"]).
                     $this->compareDiff("type",$type["type"],$data["type"])
             ]);
 
             $type->update([
                 "category_id" => $data["category_id"],
-                "type" => $data["type"]
+                "type" => $data["type"],
+                "gender" => $data["gender"],
             ]);
 
             DB::commit();

@@ -33,7 +33,8 @@ class StoreOrderRequest extends FormRequest
             "email" => "required|email",
             "phone" => "required|string",
             "address" => "required|string",
-            "note" => "string",
+            "note" => "string|nullable",
+            "orderDetails" => "required",
         ];
     }
 }

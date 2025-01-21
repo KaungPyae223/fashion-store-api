@@ -19,7 +19,6 @@ class AdminSeeder extends Seeder
             'photo' => '',
             "phone"=>"1234567890",
             "address"=>"1234 Admin Street",
-            "retired"=>false
         ]);
     }
 }

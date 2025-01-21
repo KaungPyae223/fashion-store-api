@@ -171,30 +171,51 @@ class ProductController extends Controller
 
     }
 
-    public function getProductProperties($id){
-        $category = Category::find($id);
+    public function getProductProperties(Request $request)
+    {
+        $category_id = $request->input("category");
+        $gender = $request->input("gender");
 
-        $brands = Brand::orderBy('name')->get()->map(function($brand){
+        // Fetch category with related types and sizes
+        $category = Category::with(['type', 'size'])->find($category_id);
+
+        if (!$category) {
+            return response()->json(['error' => 'Category not found'], 404);
+        }
+
+        // Get brands
+        $brands = Brand::orderBy('name')->get()->map(function ($brand) {
             return [
                 "id" => $brand->id,
-                "name" => $brand->name
+                "name" => $brand->name,
             ];
         });
 
-        $types = $category->type->map(function($type){
+        // Get types and filter by gender
+        $types = $category->type;
+
+        if ($gender && $gender !== "All") {
+            $types = $types->filter(function ($type) use ($gender) {
+                return $type->gender === $gender || $type->gender === "All";
+            });
+        }
+
+        $types = $types->map(function ($type) {
             return [
                 "id" => $type->id,
-                "name" => $type->type
+                "name" => $type->type,
             ];
         })->sortBy("name")->values();
 
-        $colors = Color::orderBy('color')->get()->map(function($color){
+        // Get colors
+        $colors = Color::orderBy('color')->get()->map(function ($color) {
             return [
                 "id" => $color->id,
-                "name" => $color->color
+                "name" => $color->color,
             ];
         });
 
+        // Get sizes
         $sizes = $category->size->map(function ($size) {
             return [
                 'id' => $size->id,
@@ -202,16 +223,15 @@ class ProductController extends Controller
             ];
         })->sortBy("name")->values();
 
-        return response()->json(
-            [
-                "brands" => $brands,
-                "types" => $types,
-                "colors" => $colors,
-                "sizes" => $sizes,
-            ]
-        );
-
+        // Return JSON response
+        return response()->json([
+            "brands" => $brands,
+            "types" => $types,
+            "colors" => $colors,
+            "sizes" => $sizes,
+        ]);
     }
+
 
     /**
      * Store a newly created resource in storage.

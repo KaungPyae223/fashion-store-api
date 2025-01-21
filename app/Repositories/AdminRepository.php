@@ -31,7 +31,14 @@ class AdminRepository extends BasicFunctions implements BaseRepository {
     }
 
 
+    public function getAdmin(){
 
+        $admin = Auth::user()->admin;
+
+        return [
+            "admin" => Auth::user()
+        ];
+    }
 
     public function create(array $data){
 
@@ -89,11 +96,12 @@ class AdminRepository extends BasicFunctions implements BaseRepository {
             $admin -> update([
                 "phone" => $data["phone"],
                 "address" => $data["address"],
-                "retired" => $data["retired"]
+
             ]);
 
             $user = $this->findUser($admin->user_id);
             $user -> update([
+                "email" => $data["email"],
                 "name" => $data["name"],
                 "role" => $data["role"],
             ]);

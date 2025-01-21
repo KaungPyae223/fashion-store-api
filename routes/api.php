@@ -12,26 +12,45 @@ use App\Http\Controllers\CustomerQuestionController;
 use App\Http\Controllers\DeliverController;
 use App\Http\Controllers\HeroController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\OrderDetailsController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProductPhotoController;
-use App\Http\Controllers\ProductSizeController;
 use App\Http\Controllers\PublicController;
-use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\TypeController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\WishlistController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix("v1")->group(function () {
 
     Route::controller(AuthController::class)->group(function () {
         Route::post('/register', 'register');
-        Route::post('/login', 'login');
+        Route::post('/login', 'LogIn');
+        Route::get("check-email","checkEmail");
+
+
+    });
+
+    Route::middleware('auth:sanctum')->group(function () {
+
+
+        //Admin
+        Route::get('admin-data',[AdminController::class,"AdminData"]);
+        Route::get("admin-activity",[AdminMonitoringController::class,"adminActivity"]);
+        Route::post('logout', [AuthController::class,"logout"]);
+        Route::post('admin/change-password',[AdminController::class,"changePassword"]);
+
+        //Customer
+        Route::get('customer-data',[CustomerController::class,"getCustomerData"]);
+        Route::post('order-products',[OrderController::class,"store"]);
+        Route::get("available-payments",[PublicController::class,"availablePayments"]);
+        Route::put("update-customer",[CustomerController::class,"update"]);
+        Route::get("order-information",[CustomerController::class,"customerOrderInformation"]);
+        Route::get("order-history",[CustomerController::class,"customerOrderHistory"]);
+        Route::get("order-details/{id}",[CustomerController::class,"customerOrderDetails"]);
+
+        Route::get("customer-question-history",[CustomerController::class,"getAllCustomerQuestions"]);
+        Route::get("customer-answer",[CustomerController::class,"getAllCustomerAnswers"]);
+        Route::post("ask-question",[CustomerController::class,"askQuestion"]);
     });
 
     Route::middleware(['auth:sanctum', 'user-role:Product Management'])->group(function () {
@@ -56,7 +75,7 @@ Route::prefix("v1")->group(function () {
             Route::post("cover-update/{id}", [ProductController::class, "updateCoverPhoto"]);
             Route::get("details-data/{id}", [ProductController::class, "productUpdateData"]);
             Route::get("filter-data", [ProductController::class, "getAllFilterData"]);
-            Route::get("properties/{id}", [ProductController::class, "getProductProperties"]);
+            Route::get("properties", [ProductController::class, "getProductProperties"]);
 
         });
         Route::apiResource("product",ProductController::class)->except(["destroy"]);
@@ -108,16 +127,31 @@ Route::prefix("v1")->group(function () {
 
         Route::get("admin-monitoring",[AdminMonitoringController::class,"index"]);
 
+
         Route::put("ads-change",[PageController::class,"updateADS"]);
         Route::post("create-carousel",[HeroController::class,"store"]);
 
         Route::post('admin/change-photo',[AdminController::class,"updatePhoto"]);
-        Route::apiResource('admin',AdminController::class)->except(["destroy"]);
+        Route::apiResource('admin',AdminController::class)->except(["destroy,show"]);
 
     });
 
-    Route::get("ads",[PublicController::class,"getHeaderAds"]);
-    Route::get("carousels",[PublicController::class,"getCarousels"]);
+    Route::controller(PublicController::class)->group(function(){
+
+        Route::get("ads","getHeaderAds");
+        Route::get("carousels","getCarousels");
+        Route::get("home","getHomePage");
+        Route::get("filter-data/{id}","getFilterData");
+        Route::get("customer-product/{id}","getProducts");
+        Route::get("product-details-data/{id}","productDetailsData");
+        Route::get("product-rating/{id}","productRating");
+        Route::get("rating-data/{id}","ratingData");
+        Route::get("search-input","searchInput");
+        Route::get("search","search");
+    });
+
+
+
 
 });
 
