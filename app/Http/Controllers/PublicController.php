@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Color;
 use App\Models\Hero;
 use App\Models\page;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Size;
+use App\Models\Type;
 use Illuminate\Http\Request;
 
 class PublicController extends Controller
@@ -87,6 +91,7 @@ class PublicController extends Controller
 
             $types = $types->sortBy('type')
                 ->pluck('type')
+                ->unique()
                 ->values();
 
 
@@ -133,7 +138,7 @@ class PublicController extends Controller
         }
 
         if ($size && $size != "All") {
-            $query->whereHas('size', function ($q) use ($type) {
+            $query->whereHas('size', function ($q) use ($size) {
                 $q->where('size', $size);
             });
         }
@@ -342,6 +347,170 @@ class PublicController extends Controller
                 'current_page' => $query->currentPage(),
                 'last_page' => $query->lastPage(),
                 'total' => $query->total(),
+            ],
+        ]);
+
+    }
+
+    public function allBrands () {
+
+        $brands = Brand::paginate(20);
+
+        return response()->json([
+            "data" => $brands->map(function($brand){
+                return [
+                    "id" => $brand->id,
+                    "img" => $brand->photo,
+                    "name" => $brand->name
+                ];
+            }),
+            'meta' => [
+                'current_page' => $brands->currentPage(),
+                'last_page' => $brands->lastPage(),
+                'total' => $brands->total(),
+            ],
+        ]);
+
+    }
+
+    public function brandFilter ($brand,Request $request) {
+
+        $gender = $request->input("gender");
+
+        $brandData = Brand::query()->where("name",$brand)->get();
+
+        $types = Type::query();
+
+
+
+        $types = $types->whereHas("product.brand", function($q) use ($brand) {
+            $q->where("name", $brand);
+        })->get();
+
+        if($gender){
+            $types =   $types->filter(function ($type) use ($gender) {
+                return $type->gender === "Women" || $type->gender === "All";
+            });
+        }
+
+        $types = $types->map(function($type) {
+            return [
+                "name" => $type->type,
+                "category_id" => $type->category_id
+            ];
+        })->unique("name")->values();
+
+
+        $colors = Color::query();
+
+        $colors = $colors->whereHas("product.brand",function($q) use($brand){
+            $q->where("name",$brand);
+        })->orderBy("color")->pluck("color")->unique()->values();
+
+
+        $sizes = Size::query();
+
+        $sizes = $sizes->whereHas("product.brand", function ($q) use ($brand) {
+            $q->where("name", $brand);
+        })
+        ->orderBy("size")
+        ->select("size", "category_id")
+        ->get()
+        ->map(function($size) {
+            return [
+                "name" => $size->size,
+                "category_id" => $size->category_id
+            ];
+        })->unique("name")->values();
+
+
+        return response()->json(
+            [
+                "brand_image" => $brandData[0]->photo,
+                "filerData" => [
+                    "types" => $types,
+                    "colors" => ["All", ...$colors],
+                    "sizes" => $sizes,
+                ]
+            ]
+        );
+
+    }
+
+    public function brandProducts ($brand,Request $request){
+
+        $gender = $request->input("gender");
+        $type = $request->input("type");
+        $color = $request->input("color");
+        $size = $request->input("size");
+        $maxPrice = $request->input("max_price");
+        $minPrice = $request->input("min_price");
+        $category = $request->input("category");
+
+        $query = Product::query();
+
+        $query = $query->where("is_delete",false)->where("status","public");
+
+        if ($gender && $gender !== "All") {
+            $query->where("gender", $gender)->orWhere("gender", "All");
+        }
+
+        $query->whereHas('brand', function ($q) use ($brand) {
+            $q->where('name', $brand);
+        });
+
+
+        if ($type && $type != "All") {
+            $query->whereHas('type', function ($q) use ($type) {
+                $q->where('type', $type);
+            });
+        }
+
+        if ($category && $category != "All") {
+            $query->whereHas('category', function ($q) use ($category) {
+                $q->where('category', $category);
+            });
+        }
+
+        if ($size && $size != "All") {
+            $query->whereHas('size', function ($q) use ($size) {
+                $q->where('size', $size);
+            });
+        }
+
+        if ($color && $color != "All") {
+            $query->whereHas('color', function ($q) use ($color) {
+                $q->where('color', $color);
+            });
+        }
+
+        if ($maxPrice) {
+            $query->where('price', '<=', $maxPrice);
+        }
+
+        if ($minPrice) {
+            $query->where('price', '>=', $minPrice);
+        }
+
+        $products = $query->paginate(16);
+
+        $data = $products->map(function($product){
+            return [
+                "id" => $product->id,
+                "name" => $product->name,
+                "cover_photo" => $product->cover_photo,
+                "price" => $product->price,
+                "color" => $product->color->color,
+
+            ];
+        });
+
+        return response()->json([
+            "data" => $data,
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'total' => $products->total(),
             ],
         ]);
 

@@ -148,10 +148,10 @@ Route::prefix("v1")->group(function () {
         Route::get("rating-data/{id}","ratingData");
         Route::get("search-input","searchInput");
         Route::get("search","search");
+        Route::get("all-brands","allBrands");
+        Route::get("brand-filter/{brand}","brandFilter");
+        Route::get("brand-products/{brand}","brandProducts");
     });
-
-
-
 
 });
 
