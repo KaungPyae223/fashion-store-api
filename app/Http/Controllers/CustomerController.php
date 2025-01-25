@@ -150,6 +150,24 @@ class CustomerController extends Controller
      }
 
 
+     public function wishList (Request $request) {
+
+        $wishlist = $request->user()->customer->wishlist;
+
+        return response()->json($wishlist->map(function($wishList){
+            return [
+                "id" => $wishList->id,
+                "product_id" => $wishList->product_id,
+                "image" => $wishList->product->cover_photo,
+                "name" => $wishList->product->name,
+                "color" => $wishList->product->color->color,
+                "price" => $wishList->product->price,
+            ];
+        }));
+
+     }
+
+
      public function customerOrderHistory(Request $request){
 
         $customer = $request->user()->customer;

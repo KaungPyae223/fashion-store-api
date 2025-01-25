@@ -16,8 +16,11 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\TypeController;
+use App\Http\Controllers\WishlistController;
+use App\Models\Review;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix("v1")->group(function () {
@@ -38,6 +41,7 @@ Route::prefix("v1")->group(function () {
         Route::get("admin-activity",[AdminMonitoringController::class,"adminActivity"]);
         Route::post('logout', [AuthController::class,"logout"]);
         Route::post('admin/change-password',[AdminController::class,"changePassword"]);
+        Route::get("review-data/{id}",[ReviewController::class,"ratings"]);
 
         //Customer
         Route::get('customer-data',[CustomerController::class,"getCustomerData"]);
@@ -51,6 +55,11 @@ Route::prefix("v1")->group(function () {
         Route::get("customer-question-history",[CustomerController::class,"getAllCustomerQuestions"]);
         Route::get("customer-answer",[CustomerController::class,"getAllCustomerAnswers"]);
         Route::post("ask-question",[CustomerController::class,"askQuestion"]);
+
+        Route::apiResource("wishlist",WishlistController::class)->only(["store","destroy"]);
+        Route::get("customer-wishlist",[CustomerController::class,"wishList"]);
+
+        Route::post("write-review",[ReviewController::class,"store"]);
     });
 
     Route::middleware(['auth:sanctum', 'user-role:Product Management'])->group(function () {
@@ -79,7 +88,8 @@ Route::prefix("v1")->group(function () {
 
         });
         Route::apiResource("product",ProductController::class)->except(["destroy"]);
-
+        Route::apiResource("review",ReviewController::class)->only("destroy");
+        Route::get("average-rating/{id}",[ReviewController::class,"averageRating"]);
     });
 
     Route::middleware(['auth:sanctum', 'user-role:Customer Support'])->group(function () {

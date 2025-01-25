@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Size;
 use App\Models\Type;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 
 class PublicController extends Controller
@@ -44,6 +45,8 @@ class PublicController extends Controller
 
     public function getHomePage(Request $request){
 
+        $gender = $request->input("gender");
+
         $hero = Hero::all()->map(function($carousel){
             return [
                 "id" => $carousel->id,
@@ -55,8 +58,86 @@ class PublicController extends Controller
             ];
         });
 
+        function formatData ($data) {
+
+            return $data->map(function ($product){
+                return [
+                    "id" => $product->id,
+                    "title" => $product->name,
+                    "img" => $product->cover_photo,
+                    "amount" => $product->price,
+                    "color" => $product->color->color,
+
+                ];
+            });
+
+
+        }
+
+        $latest = Product::query();
+
+        $latest = $latest->where("category_id",1);
+
+        if($gender){
+            $latest->where("gender",$gender)->orWhere("gender",$gender);
+        }
+
+        $latest = $latest->Limit(10)->get();
+
+
+        $brand = Brand::query()->inRandomOrder()->limit(4)->get();
+
+
+        $sneakers = Product::query();
+
+        $sneakers = $sneakers->where("category_id",2);
+
+        if($gender){
+            $sneakers->where("gender",$gender)->orWhere("gender",$gender);
+        }
+
+        $sneakers = $sneakers->Limit(10)->get();
+
+        $trending = Product::query();
+
+        $trending = $trending->where("category_id",1);
+
+        if($gender){
+            $trending->where("gender",$gender)->orWhere("gender",$gender);
+        }
+
+        $trending = $trending->inRandomOrder()->Limit(10)->get();
+
+
+        $accessories = Product::query();
+
+        $accessories = $accessories->where("category_id",3);
+
+        if($gender){
+            $accessories->where("gender",$gender)->orWhere("gender",$gender);
+        }
+
+        $accessories = $accessories->Limit(10)->get();
+
+
+        $lifeStyle = Product::query();
+
+        $lifeStyle = $lifeStyle->where("category_id",4);
+
+        if($gender){
+            $lifeStyle->where("gender",$gender)->orWhere("gender",$gender);
+        }
+
+        $lifeStyle = $lifeStyle->Limit(10)->get();
+
         return response()->json([
-            "hero" => $hero
+            "hero" => $hero,
+            "latest" => formatData($latest),
+            "brand" => $brand,
+            "sneakers" => formatData($sneakers),
+            "trending" => formatData($trending),
+            "accessories"=> formatData($accessories),
+            "lifeStyle" => formatData($lifeStyle)
         ]);
 
     }
@@ -244,7 +325,7 @@ class PublicController extends Controller
 
         $product = Product::find($id);
 
-        $review = $product->review()->paginate(8);
+        $review = $product->review()->orderBy("id","desc")->paginate(8);
 
         $reviewData = $review->map(function ($review) {
             return [

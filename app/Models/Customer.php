@@ -31,4 +31,8 @@ class Customer extends Model
         return $this->hasMany(CustomerQuestion::class,"customer_id","id");
     }
 
+    public function wishlist() {
+        return $this->hasMany(Wishlist::class,"customer_id","id");
+    }
+
 }

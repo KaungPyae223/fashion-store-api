@@ -23,7 +23,7 @@ class StoreWishlistRequest extends FormRequest
     {
         return [
             "product_id" => 'required|exists:products,id',
-            "customer_id" => 'required|exists:customers,id',
+        
         ];
     }
 }

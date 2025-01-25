@@ -24,8 +24,8 @@ class StoreReviewRequest extends FormRequest
         return [
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'required|string',
-            "product_id" => 'required|exists:products,id',
-            "customer_id" => 'required|exists:customers,id',
+            'product_id' => 'required|exists:products,id',
+
         ];
     }
 }

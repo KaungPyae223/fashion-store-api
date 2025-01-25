@@ -29,9 +29,21 @@ class WishlistController extends Controller
      */
     public function store(StoreWishlistRequest $request)
     {
-        $wishlist = Wishlist::create($request->validated());
 
-        return response()->json($wishlist, 201);
+        $product_id = $request->product_id;
+        $customer_id = $request->user()->customer->id;
+
+        $checkWishList = Wishlist::query()->where("product_id",$product_id)->where("customer_id",$customer_id)->get();
+
+        if(!$checkWishList){
+            $wishlist = Wishlist::create([
+                'product_id' => $product_id,
+                'customer_id' => $customer_id
+            ]);
+
+            return response()->json($wishlist, 201);
+        }
+
     }
 
     /**
