@@ -20,6 +20,10 @@ return new class extends Migration
             $table->string("name");
             $table->longText("cover_photo");
             $table->integer("price");
+            $table->integer("profit_percent")->default(0);
+            $table->integer("discount")->default(0)->max(100);
+            $table->date('discount_start')->nullable();
+            $table->date('discount_end')->nullable();
             $table->longText("description");
             $table->string("status")->default("public");
             $table->enum("gender",["Men","Women","All"])->default("All");

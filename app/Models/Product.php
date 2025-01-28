@@ -17,6 +17,10 @@ class Product extends Model
         "color_id",
         "name",
         "cover_photo",
+        "profit_percent",
+        "discount_start",
+        "discount",
+        "discount_end",
         "price",
         "description",
         "status",
@@ -35,6 +39,9 @@ class Product extends Model
     }
     public function size(){
         return $this->belongsToMany(Size::class,"product_sizes","product_id","size_id","id","id");
+    }
+    public function product_size(){
+        return $this->hasMany(ProductSize::class,"product_id","id");
     }
     public function color(){
         return $this->belongsTo(Color::class,"color_id","id");

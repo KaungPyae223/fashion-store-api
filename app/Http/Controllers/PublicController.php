@@ -16,19 +16,20 @@ use Illuminate\Http\Request;
 
 class PublicController extends Controller
 {
-    public function getHeaderAds(){
+    public function getHeaderAds()
+    {
 
         $ads = page::find(1)->ads;
 
         return response()->json([
             "ads" => $ads
-        ],200);
-
+        ], 200);
     }
 
-    public function getCarousels(){
+    public function getCarousels()
+    {
 
-        $hero = Hero::all()->map(function($carousel){
+        $hero = Hero::all()->map(function ($carousel) {
             return [
                 "id" => $carousel->id,
                 "image" => $carousel->image,
@@ -40,14 +41,14 @@ class PublicController extends Controller
         });
 
         return response()->json($hero);
-
     }
 
-    public function getHomePage(Request $request){
+    public function getHomePage(Request $request)
+    {
 
         $gender = $request->input("gender");
 
-        $hero = Hero::all()->map(function($carousel){
+        $hero = Hero::all()->map(function ($carousel) {
             return [
                 "id" => $carousel->id,
                 "image" => $carousel->image,
@@ -58,77 +59,148 @@ class PublicController extends Controller
             ];
         });
 
-        function formatData ($data) {
+        function formatData($data)
+        {
 
-            return $data->map(function ($product){
+            return $data->map(function ($product) {
+
+                $discount_price = 0;
+                $discount_percent = 0;
+
+                $profit = $product->price * ($product->profit_percent / 100);
+
+                $originalSellPrice = $profit + $product->price;
+
+                $start_date = $product->discount_start;
+
+
+
+                if ($start_date && $start_date < now()) {
+
+                    $discount_percent = $product->profit_percent;
+
+                    $discount_price = $product->price * ($discount_percent / 100);
+                }
+
                 return [
                     "id" => $product->id,
                     "title" => $product->name,
                     "img" => $product->cover_photo,
-                    "amount" => $product->price,
+                    "amount" => $originalSellPrice,
+                    "discount_price" => $discount_price,
+                    "discount_percent" => $discount_percent,
                     "color" => $product->color->color,
-
                 ];
             });
-
-
         }
 
-        $latest = Product::query();
+        $latest = Product::query()
+            ->join('product_sizes as PS', 'products.id', '=', 'PS.product_id')  // Join product_sizes with products
+            ->select('products.*')
+            ->groupBy('products.id')
+            ->havingRaw('SUM(PS.qty) > 0')
+            ->orderBy('PS.product_id')
+            ->where('products.category_id', 1)
+            ->where('products.is_delete', false)
+            ->where('products.status', 'public')
+            ->orderBy("created_at", "desc");
 
-        $latest = $latest->where("category_id",1);
-
-        if($gender){
-            $latest->where("gender",$gender)->orWhere("gender",$gender);
+        if ($gender) {
+            $latest->where(function ($query) use ($gender) {
+                $query->where('products.gender', $gender)
+                    ->orWhere('products.gender', 'All');
+            });
         }
 
-        $latest = $latest->Limit(10)->get();
+        $latest = $latest->limit(10)->get();  // Get the first 10 products
 
 
         $brand = Brand::query()->inRandomOrder()->limit(4)->get();
 
 
-        $sneakers = Product::query();
+        $sneakers = Product::query()
+            ->join('product_sizes as PS', 'products.id', '=', 'PS.product_id')  // Join product_sizes with products
+            ->select('products.*')
+            ->groupBy('products.id')
+            ->havingRaw('SUM(PS.qty) > 0')
+            ->orderBy('PS.product_id')
+            ->where('products.category_id', 2)
+            ->where('products.is_delete', false)
+            ->where('products.status', 'public')
+            ->orderBy("created_at", "desc");
 
-        $sneakers = $sneakers->where("category_id",2);
-
-        if($gender){
-            $sneakers->where("gender",$gender)->orWhere("gender",$gender);
+        if ($gender) {
+            $sneakers->where(function ($query) use ($gender) {
+                $query->where('products.gender', $gender)
+                    ->orWhere('products.gender', 'All');
+            });
         }
 
-        $sneakers = $sneakers->Limit(10)->get();
+        $sneakers = $sneakers->limit(10)->get();  // Get the first 10 products
 
-        $trending = Product::query();
 
-        $trending = $trending->where("category_id",1);
+        $trending = Product::query()
+            ->join('product_sizes as PS', 'products.id', '=', 'PS.product_id')  // Join product_sizes with products
+            ->select('products.*')
+            ->groupBy('products.id')
+            ->havingRaw('SUM(PS.qty) > 0')
+            ->orderBy('PS.product_id')
+            ->where('products.category_id', 1)
+            ->where('products.is_delete', false)
+            ->where('products.status', 'public');
 
-        if($gender){
-            $trending->where("gender",$gender)->orWhere("gender",$gender);
+        if ($gender) {
+            $trending->where(function ($query) use ($gender) {
+                $query->where('products.gender', $gender)
+                    ->orWhere('products.gender', 'All');
+            });
         }
 
-        $trending = $trending->inRandomOrder()->Limit(10)->get();
+        $trending = $trending->inRandomOrder()->limit(10)->get();  // Get the first 10 products
 
 
-        $accessories = Product::query();
+        $accessories = Product::query()
+            ->join('product_sizes as PS', 'products.id', '=', 'PS.product_id')  // Join product_sizes with products
+            ->select('products.*')
+            ->groupBy('products.id')
+            ->havingRaw('SUM(PS.qty) > 0')
+            ->orderBy('PS.product_id')
+            ->where('products.category_id', 3)
+            ->where('products.is_delete', false)
+            ->where('products.status', 'public')
+            ->orderBy("created_at", "desc");
 
-        $accessories = $accessories->where("category_id",3);
-
-        if($gender){
-            $accessories->where("gender",$gender)->orWhere("gender",$gender);
+        if ($gender) {
+            $accessories->where(function ($query) use ($gender) {
+                $query->where('products.gender', $gender)
+                    ->orWhere('products.gender', 'All');
+            });
         }
 
-        $accessories = $accessories->Limit(10)->get();
+        $accessories = $accessories->limit(10)->get();  // Get the first 10 products
 
 
-        $lifeStyle = Product::query();
+        $lifeStyle = Product::query()
+            ->join('product_sizes as PS', 'products.id', '=', 'PS.product_id')  // Join product_sizes with products
+            ->select('products.*')
+            ->groupBy('products.id')
+            ->havingRaw('SUM(PS.qty) > 0')
+            ->orderBy('PS.product_id')
+            ->where('products.category_id', 4)
+            ->where('products.is_delete', false)
+            ->where('products.status', 'public')
+            ->orderBy("created_at", "desc");
 
-        $lifeStyle = $lifeStyle->where("category_id",4);
-
-        if($gender){
-            $lifeStyle->where("gender",$gender)->orWhere("gender",$gender);
+        if ($gender) {
+            $lifeStyle->where(function ($query) use ($gender) {
+                $query->where('products.gender', $gender)
+                    ->orWhere('products.gender', 'All');
+            });
         }
 
-        $lifeStyle = $lifeStyle->Limit(10)->get();
+        $lifeStyle = $lifeStyle->limit(10)->get();
+
+
 
         return response()->json([
             "hero" => $hero,
@@ -136,24 +208,24 @@ class PublicController extends Controller
             "brand" => $brand,
             "sneakers" => formatData($sneakers),
             "trending" => formatData($trending),
-            "accessories"=> formatData($accessories),
+            "accessories" => formatData($accessories),
             "lifeStyle" => formatData($lifeStyle)
         ]);
-
     }
 
-    public function getFilterData (Request $request, $id){
+    public function getFilterData(Request $request, $id)
+    {
 
         $gender = $request->input("gender");
 
 
-        $category=  Category::find($id);
+        $category =  Category::find($id);
 
         $brands = $category->product
-                ->sortBy('brand.name')
-                ->pluck('brand.name')
-                ->unique()
-                ->values();
+            ->sortBy('brand.name')
+            ->pluck('brand.name')
+            ->unique()
+            ->values();
 
         $size = $category->size->sortBy('size')->pluck('size')->values();
 
@@ -162,30 +234,30 @@ class PublicController extends Controller
             ->unique()
             ->values();
 
-            $types = $category->type;
+        $types = $category->type;
 
-            if ($gender && $gender !== "All") {
-                $types = $types->filter(function ($type) use ($gender) {
-                    return $type->gender === $gender || $type->gender === "All";
-                });
-            }
+        if ($gender && $gender !== "All") {
+            $types = $types->filter(function ($type) use ($gender) {
+                return $type->gender === $gender || $type->gender === "All";
+            });
+        }
 
-            $types = $types->sortBy('type')
-                ->pluck('type')
-                ->unique()
-                ->values();
+        $types = $types->sortBy('type')
+            ->pluck('type')
+            ->unique()
+            ->values();
 
 
         return response()->json([
             "brands" => ["All", ...$brands],
-            "types" => ["All",...$types],
-            "colors" => ["All",...$colors],
-            "sizes" => ["All",...$size]
+            "types" => ["All", ...$types],
+            "colors" => ["All", ...$colors],
+            "sizes" => ["All", ...$size]
         ]);
-
     }
 
-    public function getProducts(Request $request,$id){
+    public function getProducts(Request $request, $id)
+    {
 
         $gender = $request->input("gender");
 
@@ -198,12 +270,15 @@ class PublicController extends Controller
 
         $query = Product::query();
 
+        $query = $query->join('product_sizes as PS', 'products.id', '=', 'PS.product_id')  // Join product_sizes with products
+            ->select('products.*')
+            ->groupBy('products.id')
+            ->havingRaw('SUM(PS.qty) > 0');
 
-
-        $query = $query->where("is_delete",false)->where("status","public");
+        $query = $query->where("products.is_delete", false)->where("status", "public");
 
         if ($gender && $gender !== "All") {
-            $query->where("gender", $gender)->orWhere("gender", "All");
+            $query->where("products.gender", $gender)->orWhere("gender", "All");
         }
 
         if ($brand && $brand != "All") {
@@ -220,7 +295,7 @@ class PublicController extends Controller
 
         if ($size && $size != "All") {
             $query->whereHas('size', function ($q) use ($size) {
-                $q->where('size', $size);
+                $q->where('size', $size)->where('qty', '>', 0);
             });
         }
 
@@ -239,16 +314,36 @@ class PublicController extends Controller
         }
 
 
-        $products = $query->where("category_id",$id)->paginate(16);
+        $products = $query->where("category_id", $id)->paginate(16);
 
-        $data = $products->map(function($product){
+        $data = $products->map(function ($product) {
+
+            $discount_price = 0;
+            $discount_percent = 0;
+
+            $profit = $product->price * ($product->profit_percent / 100);
+
+            $originalSellPrice = $profit + $product->price;
+
+            $start_date = $product->discount_start;
+
+
+
+            if ($start_date && $start_date < now()) {
+
+                $discount_percent = $product->profit_percent;
+
+                $discount_price = $product->price * ($discount_percent / 100);
+            }
+
             return [
                 "id" => $product->id,
                 "name" => $product->name,
                 "cover_photo" => $product->cover_photo,
-                "price" => $product->price,
+                "price" => $originalSellPrice,
+                "discount_price" => $discount_price,
+                "discount_percent" => $discount_percent,
                 "color" => $product->color->color,
-
             ];
         });
 
@@ -260,10 +355,10 @@ class PublicController extends Controller
                 'total' => $products->total(),
             ],
         ]);
-
     }
 
-    public function productDetailsData($id){
+    public function productDetailsData($id)
+    {
 
         $product = Product::find($id);
 
@@ -272,26 +367,44 @@ class PublicController extends Controller
 
         $query = Product::query();
 
-        $query = $query->where("category_id",$product->category_id)
-        ->where("id","!=",$id)
-        ->where("is_delete",false)
-        ->where("status","public")
-        ->where(function ($q) use ($product) {
-            $q->where("gender","All")
-            ->orWhere("gender",$product->gender);
-        })
-        ->where("type_id",$product->type_id)
-        ->limit(6)
-        ->get()
-        ->map(function($product){
-            return [
-                "id" => $product->id,
-                "name" => $product->name,
-                "cover_photo" => $product->cover_photo,
-                "price" => $product->price,
-                "color" => $product->color->color,
-            ];
-        });
+        $query = $query->where("category_id", $product->category_id)
+            ->where("id", "!=", $id)
+            ->where("is_delete", false)
+            ->where("status", "public")
+            ->where(function ($q) use ($product) {
+                $q->where("gender", "All")
+                    ->orWhere("gender", $product->gender);
+            })
+            ->where("type_id", $product->type_id)
+            ->limit(6)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    "id" => $product->id,
+                    "name" => $product->name,
+                    "cover_photo" => $product->cover_photo,
+                    "price" => $product->price,
+                    "color" => $product->color->color,
+                ];
+            });
+
+        $discount_price = 0;
+        $discount_percent = 0;
+
+        $profit = $product->price * ($product->profit_percent / 100);
+
+        $originalSellPrice = $profit + $product->price;
+
+        $start_date = $product->discount_start;
+
+
+
+        if ($start_date && $start_date < now()) {
+
+            $discount_percent = $product->profit_percent;
+
+            $discount_price = $product->price * ($discount_percent / 100);
+        }
 
 
         return response()->json([
@@ -299,7 +412,9 @@ class PublicController extends Controller
                 "id" => $product->id,
                 "rating" => 5,
                 "color" => $product->color->color,
-                "price" => $product->price,
+                "price" => $originalSellPrice,
+                "discount_price" => $discount_price,
+                "discount_percent" => $discount_percent,
                 "title" => $product->name,
                 "cover_image" => $product->cover_photo,
                 "detailsImage" => $product->productPhoto->pluck("Photo")->values(),
@@ -318,14 +433,14 @@ class PublicController extends Controller
                 "average" => $averageRating
             ]
         ]);
-
     }
 
-    public function productRating ($id) {
+    public function productRating($id)
+    {
 
         $product = Product::find($id);
 
-        $review = $product->review()->orderBy("id","desc")->paginate(8);
+        $review = $product->review()->orderBy("id", "desc")->paginate(8);
 
         $reviewData = $review->map(function ($review) {
             return [
@@ -348,7 +463,8 @@ class PublicController extends Controller
         ]);
     }
 
-    public function ratingData($id){
+    public function ratingData($id)
+    {
 
         $product = Product::find($id);
 
@@ -356,12 +472,12 @@ class PublicController extends Controller
             "title" => $product->name,
             "photo" => $product->cover_photo,
         ]);
-
     }
 
-    public function availablePayments(){
+    public function availablePayments()
+    {
 
-        $payments = Payment::query()->where("status","available")->get()->map(function($payment){
+        $payments = Payment::query()->where("status", "available")->get()->map(function ($payment) {
             return [
                 "name" => $payment->payment,
                 "id" => $payment->id
@@ -369,21 +485,23 @@ class PublicController extends Controller
         });
 
         return response()->json($payments);
-
     }
 
-    public function searchInput (Request $request) {
+    public function searchInput(Request $request)
+    {
 
         $searchTerm = $request->input("q");
         $gender = $request->input("gender");
 
         $query = Product::query();
 
-        if($gender) {
+        if ($gender) {
             $query = $query->where("gender", $gender)->orWhere("gender", "All");
         }
 
-        $products = $query->where("name","like","%$searchTerm%")->orWhereHas("brand",function ($q) use ($searchTerm) {$q->where("name","like","%$searchTerm%");})->limit(8)->get()->map(function($product){
+        $products = $query->where("name", "like", "%$searchTerm%")->orWhereHas("brand", function ($q) use ($searchTerm) {
+            $q->where("name", "like", "%$searchTerm%");
+        })->limit(8)->get()->map(function ($product) {
             return [
                 "id" => $product->id,
                 "name" => $product->name,
@@ -396,23 +514,25 @@ class PublicController extends Controller
         return response()->json([
             "data" => $products
         ]);
-
     }
 
-    public function search (Request $request) {
+    public function search(Request $request)
+    {
 
         $searchTerm = $request->input("q");
         $gender = $request->input("gender");
 
         $query = Product::query();
 
-        if($gender) {
+        if ($gender) {
             $query = $query->where("gender", $gender)->orWhere("gender", "All");
         }
 
-        $query = $query->where("name","like","%$searchTerm%")->orWhereHas("brand",function ($q) use ($searchTerm) {$q->where("name","like","%$searchTerm%");})->paginate(25);
+        $query = $query->where("name", "like", "%$searchTerm%")->orWhereHas("brand", function ($q) use ($searchTerm) {
+            $q->where("name", "like", "%$searchTerm%");
+        })->paginate(25);
 
-        $data = $query->map(function($product){
+        $data = $query->map(function ($product) {
             return [
                 "id" => $product->id,
                 "name" => $product->name,
@@ -430,15 +550,15 @@ class PublicController extends Controller
                 'total' => $query->total(),
             ],
         ]);
-
     }
 
-    public function allBrands () {
+    public function allBrands()
+    {
 
         $brands = Brand::paginate(20);
 
         return response()->json([
-            "data" => $brands->map(function($brand){
+            "data" => $brands->map(function ($brand) {
                 return [
                     "id" => $brand->id,
                     "img" => $brand->photo,
@@ -451,30 +571,30 @@ class PublicController extends Controller
                 'total' => $brands->total(),
             ],
         ]);
-
     }
 
-    public function brandFilter ($brand,Request $request) {
+    public function brandFilter($brand, Request $request)
+    {
 
         $gender = $request->input("gender");
 
-        $brandData = Brand::query()->where("name",$brand)->get();
+        $brandData = Brand::query()->where("name", $brand)->get();
 
         $types = Type::query();
 
 
 
-        $types = $types->whereHas("product.brand", function($q) use ($brand) {
+        $types = $types->whereHas("product.brand", function ($q) use ($brand) {
             $q->where("name", $brand);
         })->get();
 
-        if($gender){
+        if ($gender) {
             $types =   $types->filter(function ($type) use ($gender) {
                 return $type->gender === "Women" || $type->gender === "All";
             });
         }
 
-        $types = $types->map(function($type) {
+        $types = $types->map(function ($type) {
             return [
                 "name" => $type->type,
                 "category_id" => $type->category_id
@@ -484,8 +604,8 @@ class PublicController extends Controller
 
         $colors = Color::query();
 
-        $colors = $colors->whereHas("product.brand",function($q) use($brand){
-            $q->where("name",$brand);
+        $colors = $colors->whereHas("product.brand", function ($q) use ($brand) {
+            $q->where("name", $brand);
         })->orderBy("color")->pluck("color")->unique()->values();
 
 
@@ -494,15 +614,15 @@ class PublicController extends Controller
         $sizes = $sizes->whereHas("product.brand", function ($q) use ($brand) {
             $q->where("name", $brand);
         })
-        ->orderBy("size")
-        ->select("size", "category_id")
-        ->get()
-        ->map(function($size) {
-            return [
-                "name" => $size->size,
-                "category_id" => $size->category_id
-            ];
-        })->unique("name")->values();
+            ->orderBy("size")
+            ->select("size", "category_id")
+            ->get()
+            ->map(function ($size) {
+                return [
+                    "name" => $size->size,
+                    "category_id" => $size->category_id
+                ];
+            })->unique("name")->values();
 
 
         return response()->json(
@@ -515,10 +635,10 @@ class PublicController extends Controller
                 ]
             ]
         );
-
     }
 
-    public function brandProducts ($brand,Request $request){
+    public function brandProducts($brand, Request $request)
+    {
 
         $gender = $request->input("gender");
         $type = $request->input("type");
@@ -530,7 +650,7 @@ class PublicController extends Controller
 
         $query = Product::query();
 
-        $query = $query->where("is_delete",false)->where("status","public");
+        $query = $query->where("is_delete", false)->where("status", "public");
 
         if ($gender && $gender !== "All") {
             $query->where("gender", $gender)->orWhere("gender", "All");
@@ -575,7 +695,7 @@ class PublicController extends Controller
 
         $products = $query->paginate(16);
 
-        $data = $products->map(function($product){
+        $data = $products->map(function ($product) {
             return [
                 "id" => $product->id,
                 "name" => $product->name,
@@ -594,7 +714,5 @@ class PublicController extends Controller
                 'total' => $products->total(),
             ],
         ]);
-
     }
-
 }

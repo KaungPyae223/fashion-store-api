@@ -9,6 +9,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Color;
 use App\Models\Product;
+use App\Models\ProductSize;
 use App\Models\Type;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
@@ -79,6 +80,113 @@ class ProductController extends Controller
                 'total' => $products->total(),
             ],
         ]);
+    }
+
+    public function promotion(Request $request)
+    {
+        $searchTerm = $request->input('q');
+        $searchBrand = $request->input('brand');
+         $searchType = $request->input('type');
+        $searchCategory = $request->input('category');
+
+
+
+        $query = Product::query();
+
+        if ($searchTerm) {
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        if ($searchBrand && $searchBrand != "all") {
+            $query->whereHas('brand', function ($q) use ($searchBrand) {
+                $q->where('name', $searchBrand);
+            });
+        }
+
+
+        $query->where('status', "public");
+
+
+        if ($searchType && $searchType != "all") {
+            $query->whereHas('type', function ($q) use ($searchType) {
+                $q->where('type', $searchType);
+            });
+        }
+
+        if ($searchCategory && $searchCategory != "all") {
+            $query->whereHas('category', function ($q) use ($searchCategory) {
+                $q->where('category', $searchCategory);
+            });
+        }
+
+        $query->where("is_delete",false);
+
+        // Paginate the results
+        $products = $query->orderBy("id", "desc")->paginate(10);
+
+        // Transform the paginated data using the resource collection
+        $data = $products->map(function($product){
+
+
+            $discount_percent = 0;
+
+            $start_date = $product->discount_start;
+
+            if($start_date && $start_date < now()){
+                $discount_percent = $product->discount;
+            }
+
+            $profit = $product->price * ($product->profit_percent/100) ;
+
+
+            $sellPrice = $product->price + $profit;
+
+            $discountAmount = $sellPrice * ($product->discount/100);
+            $currentDiscountAmount = $sellPrice * ($discount_percent/100);
+
+
+            $actual_profit = $profit-$discountAmount;
+            $promotion_sell_price = $product->price + $actual_profit;
+            $currentSellPrice = $product->price + $profit - $currentDiscountAmount;
+
+            return [
+                "id" => $product->id,
+                "original_price" => $product->price,
+                "cover_photo" => $product->cover_photo,
+                "name" => $product->name,
+                "profit_percent" => $product->profit_percent,
+                "discount" => $product->discount,
+                "discount_start_date" => $product->discount_start,
+                "discount_end_date" => $product->discount_end,
+                "qty" => $product->product_size->sum("qty"),
+                "discount_amount" => $discountAmount,
+                "profit" => $actual_profit,
+                "sell_price" => $currentSellPrice,
+                "promotion_sell_price" => $promotion_sell_price
+            ];
+        });
+
+        // Return the response with meta information
+        return response()->json([
+            "data" => $data,
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'total' => $products->total(),
+            ],
+        ]);
+    }
+
+    public function createPromotion(Request $request,$id){
+
+        $product = $this->productRepository->find($id);
+
+        $product = $product->update([
+            "discount_start" => $request->start,
+            "discount_end" => $request->end,
+            "discount" => $request->discount
+        ]);
+
     }
 
     public function productTrash(Request $request)
@@ -249,6 +357,7 @@ class ProductController extends Controller
             "cover_photo" => $request->file("cover_photo"),
             "details_photos" => $request->file("details_photos"),
             "price" => $request->price,
+            "profit_percent" => $request->profit_percent,
             "description" => $request->description,
             "status" => $request->status,
             "gender" => $request->gender,
@@ -263,6 +372,42 @@ class ProductController extends Controller
 
     }
 
+    public function getProductQuantity($id){
+
+        $product = $this->productRepository->find($id);
+
+        return response()->json([
+            'product_data' => [
+                "name" => $product->name,
+                "cover_image" => $product->cover_photo,
+            ],
+            'quantity' => $product->product_size->map(function($el){
+                return [
+                    'size_id' => $el->id,
+                    'size' => $el->size->size,
+                    'quantity' => $el->qty
+                ];
+            }),
+            'total_quantity' => $product->product_size->sum('qty')
+        ], 200);
+
+    }
+
+    public function updateProductQuantity(Request $request, $id){
+
+
+        $product_size = ProductSize::find($id);
+
+        $product_size->update([
+            "qty" => $request->qty
+        ]);
+
+        return response()->json([
+            'message' => 'Product quantity updated successfully',
+            'status' => 200
+        ], 200);
+    }
+
     /**
      * Display the specified resource.
      */
@@ -270,6 +415,9 @@ class ProductController extends Controller
      public function adminProductDetails($id){
 
         $baseProduct = $this->productRepository->find($id);
+
+        $discount_price = $baseProduct->discount ?  $baseProduct->price - ($baseProduct->price * ($baseProduct->discount / 100)) : 0;
+
 
         $product = [
             "id" => $baseProduct->id,
@@ -285,7 +433,10 @@ class ProductController extends Controller
             }),
             "name" => $baseProduct->name,
             "cover_photo" => $baseProduct->cover_photo,
-            "price" => $baseProduct->price,
+            "original_price" => $baseProduct->price,
+            "profit_percent" => $baseProduct->profit_percent,
+            "discount_price" => $discount_price,
+            "price" => $baseProduct->price + ($baseProduct->price * ($baseProduct->profit_percent / 100)) - $discount_price,
             "description" => $baseProduct->description,
             "status" => $baseProduct->status,
             "gender" => $baseProduct->gender,
@@ -308,6 +459,8 @@ class ProductController extends Controller
 
         $baseProduct = $this->productRepository->find($id);
 
+        $sellPrice = $baseProduct->price + ($baseProduct->price * ($baseProduct->profit_percent / 100));
+
         $product = [
             "id" => $baseProduct->id,
             "type" => [
@@ -329,6 +482,7 @@ class ProductController extends Controller
                     "name" => $el->size
                 ];
             }),
+            "profit_percent" => $baseProduct->profit_percent,
             "name" => $baseProduct->name,
             "cover_photo" => $baseProduct->cover_photo,
             "price" => $baseProduct->price,
@@ -338,6 +492,7 @@ class ProductController extends Controller
             "is_delete" => $baseProduct->is_delete,
             "created_at" => $baseProduct->created_at,
             "updated_at" => $baseProduct->updated_at,
+            "sell_price" => $sellPrice,
             "product_images" => $baseProduct->productPhoto->map(function ($image) {
                 return [
                     "url" => $image->Photo,
@@ -413,6 +568,7 @@ class ProductController extends Controller
             "color_id" => $request->color_id,
             "name" => $request->name,
             "price" => $request->price,
+            "profit_percent" => $request->profit_percent,
             "description" => $request->description,
             "status" => $request->status,
             "gender" => $request->gender,

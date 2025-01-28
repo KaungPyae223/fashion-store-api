@@ -68,6 +68,7 @@ Route::prefix("v1")->group(function () {
         Route::apiResource("color",ColorController::class);
         Route::apiResource('type',TypeController::class);
 
+
         Route::post('brand/update-image',[BrandController::class,"updatePhoto"]);
         Route::apiResource('brand',BrandController::class);
 
@@ -76,6 +77,8 @@ Route::prefix("v1")->group(function () {
 
         Route::prefix("product")->group(function () {
 
+            Route::put('update-quantity/{id}',[ProductController::class,"updateProductQuantity"]);
+            Route::get('get-quantity/{id}',[ProductController::class,"getProductQuantity"]);
             Route::get("trash",[ProductController::class,"productTrash"]);
             Route::get("admin-product-info/{id}",[ProductController::class,"adminProductDetails"]);
             Route::put("delete/{id}", [ProductController::class, "deleteProduct"]);
@@ -85,11 +88,14 @@ Route::prefix("v1")->group(function () {
             Route::get("details-data/{id}", [ProductController::class, "productUpdateData"]);
             Route::get("filter-data", [ProductController::class, "getAllFilterData"]);
             Route::get("properties", [ProductController::class, "getProductProperties"]);
+            Route::get("promotion",[ProductController::class,"promotion"]);
+            Route::put("promotion/{id}",[ProductController::class,"createPromotion"]);
 
         });
         Route::apiResource("product",ProductController::class)->except(["destroy"]);
         Route::apiResource("review",ReviewController::class)->only("destroy");
         Route::get("average-rating/{id}",[ReviewController::class,"averageRating"]);
+
     });
 
     Route::middleware(['auth:sanctum', 'user-role:Customer Support'])->group(function () {

@@ -20,6 +20,8 @@ return new class extends Migration
             $table->integer("total_products");
             $table->integer("sub_total");
             $table->integer("tax");
+            $table->integer("discount_amount")->default(0);
+            $table->integer("profit_amount")->default(0);
             $table->integer("total_qty");
             $table->integer("total_price");
             $table->string("name");

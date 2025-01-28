@@ -28,6 +28,7 @@ class UpdateProductRequest extends FormRequest
             "color_id" => "required|exists:colors,id",
             "name" => "required",
             "price" => "required|integer",
+            "profit_percent" => "required|integer",
             "description" => "required",
             "status" => "required|in:public,private",
             "gender" => "required|in:Men,Women,All",

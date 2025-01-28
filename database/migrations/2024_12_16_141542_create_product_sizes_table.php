@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('product_sizes', function (Blueprint $table) {
             $table->id();
+            $table->integer("qty")->default(0);
             $table->unsignedBigInteger("product_id");
             $table->unsignedBigInteger("size_id");
             $table->timestamps();
