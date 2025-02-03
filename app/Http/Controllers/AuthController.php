@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\CustomerResource;
+use App\Models\Customer;
 use App\Models\User;
 use App\Repositories\CustomerRepository;
 use Illuminate\Http\Request;
@@ -19,6 +20,10 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+        ]);
+
+        $customer = Customer::create([
+            'user_id' => $user->id,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

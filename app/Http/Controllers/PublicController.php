@@ -136,7 +136,7 @@ class PublicController extends Controller
             });
         }
 
-        $sneakers = $sneakers->limit(10)->get();  // Get the first 10 products
+        $sneakers = $sneakers->limit(6)->get();  // Get the first 10 products
 
 
         $trending = Product::query()
@@ -198,7 +198,7 @@ class PublicController extends Controller
             });
         }
 
-        $lifeStyle = $lifeStyle->limit(10)->get();
+        $lifeStyle = $lifeStyle->limit(4)->get();
 
 
 
@@ -502,12 +502,32 @@ class PublicController extends Controller
         $products = $query->where("name", "like", "%$searchTerm%")->orWhereHas("brand", function ($q) use ($searchTerm) {
             $q->where("name", "like", "%$searchTerm%");
         })->limit(8)->get()->map(function ($product) {
+            $discount_price = 0;
+            $discount_percent = 0;
+
+            $profit = $product->price * ($product->profit_percent / 100);
+
+            $originalSellPrice = $profit + $product->price;
+
+            $start_date = $product->discount_start;
+
+
+
+            if ($start_date && $start_date < now()) {
+
+                $discount_percent = $product->profit_percent;
+
+                $discount_price = $product->price * ($discount_percent / 100);
+            }
+
             return [
                 "id" => $product->id,
                 "name" => $product->name,
                 "cover_photo" => $product->cover_photo,
-                "brand" => $product->brand->name,
-                "amount" => $product->price
+                "price" => $originalSellPrice,
+                "discount_price" => $discount_price,
+                "discount_percent" => $discount_percent,
+                "color" => $product->color->color,
             ];
         });
 
@@ -533,13 +553,36 @@ class PublicController extends Controller
         })->paginate(25);
 
         $data = $query->map(function ($product) {
+
+            $discount_price = 0;
+            $discount_percent = 0;
+
+            $profit = $product->price * ($product->profit_percent / 100);
+
+            $originalSellPrice = $profit + $product->price;
+
+            $start_date = $product->discount_start;
+
+
+
+            if ($start_date && $start_date < now()) {
+
+                $discount_percent = $product->profit_percent;
+
+                $discount_price = $product->price * ($discount_percent / 100);
+            }
+
             return [
                 "id" => $product->id,
                 "name" => $product->name,
                 "cover_photo" => $product->cover_photo,
-                "brand" => $product->brand->name,
-                "amount" => $product->price
+                "price" => $originalSellPrice,
+                "discount_price" => $discount_price,
+                "discount_percent" => $discount_percent,
+                "color" => $product->color->color,
             ];
+
+
         });
 
         return response()->json([

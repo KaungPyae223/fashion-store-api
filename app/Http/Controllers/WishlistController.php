@@ -35,13 +35,22 @@ class WishlistController extends Controller
 
         $checkWishList = Wishlist::query()->where("product_id",$product_id)->where("customer_id",$customer_id)->get();
 
-        if(!$checkWishList){
+
+        if($checkWishList->count() == 0){
             $wishlist = Wishlist::create([
                 'product_id' => $product_id,
                 'customer_id' => $customer_id
             ]);
 
-            return response()->json($wishlist, 201);
+            return response()->json([
+                "message" => "Product added to wishlist successfully",
+                "status" => 200
+            ]);
+        }else{
+            return response()->json([
+                "message" => "Product already in wishlist",
+                "status" => 200
+            ]);
         }
 
     }

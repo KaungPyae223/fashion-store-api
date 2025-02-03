@@ -23,7 +23,7 @@ class StoreBrandRequest extends FormRequest
     {
         return [
             "name" => "required|unique:brands,name",
-            "photo" => "required|image|mimes:jpeg,png,jpg,gif",
+            "photo" => "required",
         ];
     }
 }

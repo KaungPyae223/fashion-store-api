@@ -155,13 +155,34 @@ class CustomerController extends Controller
         $wishlist = $request->user()->customer->wishlist;
 
         return response()->json($wishlist->map(function($wishList){
+
+            $discount_price = 0;
+            $discount_percent = 0;
+
+            $profit = $wishList->product->price * ($wishList->product->profit_percent / 100);
+
+            $originalSellPrice = $profit + $wishList->product->price;
+
+            $start_date = $wishList->product->discount_start;
+
+
+
+            if ($start_date && $start_date < now()) {
+
+                $discount_percent = $wishList->product->profit_percent;
+
+                $discount_price = $wishList->product->price * ($discount_percent / 100);
+            }
+
             return [
                 "id" => $wishList->id,
+                "discount_price" => $discount_price,
+                "discount_percent" => $discount_percent,
                 "product_id" => $wishList->product_id,
                 "image" => $wishList->product->cover_photo,
                 "name" => $wishList->product->name,
                 "color" => $wishList->product->color->color,
-                "price" => $wishList->product->price,
+                "price" => $originalSellPrice,
             ];
         }));
 
@@ -239,6 +260,7 @@ class CustomerController extends Controller
     public function getCustomerData(Request $request){
         $user = $request->user();
 
+       
         return response()->json([
             "id" => $user->customer->id,
             "total_orders" => $user->customer->orders->count(),

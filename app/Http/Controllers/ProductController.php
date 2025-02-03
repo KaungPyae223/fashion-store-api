@@ -525,7 +525,7 @@ class ProductController extends Controller
     {
 
         $request->validate([
-            "cover_photo" => "required|image|mimes:jpeg,png,jpg,gif",
+            "cover_photo" => "required",
         ]);
 
         $product = $this->productRepository->updateCoverPhoto([
@@ -542,7 +542,7 @@ class ProductController extends Controller
 
 
         $request->validate([
-            "photos.*" => "required|image|mimes:jpeg,png,jpg,gif",
+            "photos.*" => "required",
         ]);
 
         $product = $this->productRepository->updateDetailsPhoto([

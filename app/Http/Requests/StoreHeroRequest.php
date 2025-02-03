@@ -24,7 +24,7 @@ class StoreHeroRequest extends FormRequest
         return [
             "title" => "required|string",
             "subtitle" => "required|string",
-            "image" => "required|image|mimes:jpeg,png,jpg,gif",
+            "image" => "required",
             "link" => "required|string",
             "link_title" => "required|string",
         ];

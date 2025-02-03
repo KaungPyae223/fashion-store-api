@@ -39,8 +39,8 @@ class HeroRepository extends BasicFunctions
             $this->addAdminActivity([
                 "admin_id" => $this->admin_id,
                 "method" => "Create",
-                "type" => "Deliver",
-                "action" => "Create a deliver".$hero->id
+                "type" => "Carousel",
+                "action" => "Create a carousel".$hero->id
             ]);
 
             DB::commit();

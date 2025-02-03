@@ -95,7 +95,7 @@ class BrandController extends Controller
 
         $request->validate([
             "id" => "required|exists:brands,id",
-            "photo" => "required|image|mimes:jpeg,png,jpg,gif",
+            "photo" => "required",
         ]);
 
         $admin = $this->brandRepository->updateImage([
