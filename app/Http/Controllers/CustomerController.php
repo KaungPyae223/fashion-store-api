@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\StoreCustomerQuestionRequest;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
@@ -36,6 +37,20 @@ class CustomerController extends Controller
 
 
      }
+
+     public function changePassword(ChangePasswordRequest $request)
+    {
+        $user = $request->user();
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['message' => 'Old password is incorrect'], 401);
+        }
+
+        $user->update(['password' => Hash::make($request->new_password)]);
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Password changed successfully']);
+    }
 
      public function getAllCustomerQuestions(Request $request)
      {
@@ -260,7 +275,7 @@ class CustomerController extends Controller
     public function getCustomerData(Request $request){
         $user = $request->user();
 
-       
+
         return response()->json([
             "id" => $user->customer->id,
             "total_orders" => $user->customer->orders->count(),

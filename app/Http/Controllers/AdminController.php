@@ -7,6 +7,7 @@ use App\Http\Requests\StoreAdminRequest;
 use App\Http\Requests\UpdateAdminRequest;
 use App\Http\Resources\AdminResource;
 use App\Models\Admin;
+use App\Models\User;
 use App\Repositories\AdminRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -92,6 +93,20 @@ class AdminController extends Controller
         return response()->json(['message' => 'Password changed successfully']);
     }
 
+    public function restartPassword($id)
+    {
+
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $user->update(['password' => Hash::make('admin')]);
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Password restarted successfully']);
+    }
 
     /**
      * Store a newly created resource in storage.

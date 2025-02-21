@@ -27,6 +27,8 @@ class StoreOrderRequest extends FormRequest
             "total_products" => "required|integer",
             "sub_total" => "required|integer",
             "tax" => "required|integer",
+            "discount_amount" => "required|integer",
+            "profit_amount" => "required|integer",
             "total_qty" => "required|integer",
             "total_price" => "required|integer",
             "name" => "required|string",

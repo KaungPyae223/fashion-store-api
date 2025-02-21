@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Order;
 use App\Models\OrderDetails;
+use App\Models\ProductSize;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
 use Illuminate\Support\Facades\Auth;
@@ -36,6 +37,8 @@ class OrderRepository extends BasicFunctions implements BaseRepository
                 "total_products" => $data["total_products"],
                 "sub_total" => $data["sub_total"],
                 "tax" => $data["tax"],
+                "discount_amount" => $data["discount_amount"],
+                "profit_amount" => $data["profit_amount"],
                 "total_qty" => $data["total_qty"],
                 "total_price" => $data["total_price"],
                 "name" => $data["name"],
@@ -57,6 +60,13 @@ class OrderRepository extends BasicFunctions implements BaseRepository
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
+
+                $product_size = ProductSize::find($orderProduct["product_size_id"]);
+
+                $product_size->update([
+                    "qty" => $product_size->qty - $orderProduct["qty"]
+                ]);
+
             }
 
             OrderDetails::insert($orderDetailsData);

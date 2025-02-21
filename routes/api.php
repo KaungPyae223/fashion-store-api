@@ -44,6 +44,7 @@ Route::prefix("v1")->group(function () {
         Route::get("review-data/{id}",[ReviewController::class,"ratings"]);
 
         //Customer
+        Route::post('customer/change-password',[CustomerController::class,"changePassword"]);
         Route::get('customer-data',[CustomerController::class,"getCustomerData"]);
         Route::post('order-products',[OrderController::class,"store"]);
         Route::get("available-payments",[PublicController::class,"availablePayments"]);
@@ -142,7 +143,7 @@ Route::prefix("v1")->group(function () {
     Route::middleware(['auth:sanctum', 'user-role:System Admin'])->group(function () {
 
         Route::get("admin-monitoring",[AdminMonitoringController::class,"index"]);
-
+        Route::post("admin/restart-password/{id}",[AdminController::class,"restartPassword"]);
 
         Route::put("ads-change",[PageController::class,"updateADS"]);
         Route::post("create-carousel",[HeroController::class,"store"]);

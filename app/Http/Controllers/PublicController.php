@@ -388,8 +388,8 @@ class PublicController extends Controller
                 ];
             });
 
-        $discount_price = 0;
-        $discount_percent = 0;
+        $discount_price = 50000;
+        $discount_percent = 20;
 
         $profit = $product->price * ($product->profit_percent / 100);
 
@@ -398,13 +398,14 @@ class PublicController extends Controller
         $start_date = $product->discount_start;
 
 
-
         if ($start_date && $start_date < now()) {
 
             $discount_percent = $product->profit_percent;
 
             $discount_price = $product->price * ($discount_percent / 100);
         }
+
+        $profit_amount = $profit - $discount_price;
 
 
         return response()->json([
@@ -416,14 +417,18 @@ class PublicController extends Controller
                 "discount_price" => $discount_price,
                 "discount_percent" => $discount_percent,
                 "title" => $product->name,
+                "profit_amount" => $profit_amount,
                 "cover_image" => $product->cover_photo,
                 "detailsImage" => $product->productPhoto->pluck("Photo")->values(),
-                "size" => $product->size->map(function ($size) {
+                "size" => $product->product_size->filter(function ($productSize) {
+                    return $productSize->qty > 0;
+                })->map(function ($productSize) {
                     return [
-                        "id" => $size->id,
-                        "name" => $size->size
+                        "id" => $productSize->id,
+                        "name" => $productSize->size->size
                     ];
                 }),
+
                 "description" => $product->description
             ],
             "RelativeProducts" => $query,

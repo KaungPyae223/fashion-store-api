@@ -18,6 +18,8 @@ class Order extends Model
         "total_products",
         "sub_total",
         "tax",
+        "discount_amount",
+        "profit_amount",
         "total_qty",
         "total_price",
         "name",
@@ -48,6 +50,6 @@ class Order extends Model
         return $this->belongsTo(Payment::class,"payment_id","id");
     }
 
-    
+
 
 }
