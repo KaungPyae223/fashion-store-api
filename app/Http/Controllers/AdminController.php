@@ -125,7 +125,7 @@ class AdminController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Color created successfully',
+            'message' => 'Admin created successfully',
             'data' => new AdminResource($admin)
         ], 201);
 

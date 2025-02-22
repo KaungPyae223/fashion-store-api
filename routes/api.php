@@ -154,6 +154,12 @@ Route::prefix("v1")->group(function () {
 
     });
 
+    Route::middleware(['auth:sanctum', 'user-role:Blog Management'])->group(function () {
+
+        Route::apiResource('blog',BlogController::class);
+
+    });
+
     Route::controller(PublicController::class)->group(function(){
 
         Route::get("ads","getHeaderAds");

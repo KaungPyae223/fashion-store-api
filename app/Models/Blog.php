@@ -17,4 +17,8 @@ class Blog extends Model
         "content"
     ];
 
+    public function admin(){
+        return $this->belongsTo(Admin::class,"admin_id","id");
+    }
+
 }

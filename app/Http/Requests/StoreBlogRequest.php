@@ -22,9 +22,8 @@ class StoreBlogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "admin_id" => "required|exists:admins,id",
             "title" => "required|string",
-            "photo" => "required|image|mimes:jpeg,png,jpg,gif",
+            "photo" => "required",
             "content" => "required",
         ];
     }

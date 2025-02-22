@@ -5,14 +5,17 @@ namespace App\Repositories;
 use App\Models\Blog;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
+use Illuminate\Support\Facades\Auth;
 
 class BlogRepository extends BasicFunctions implements BaseRepository{
 
     protected $model;
+    protected $admin_id;
 
     function __construct()
     {
         $this->model = Blog::class;
+        $this->admin_id = Auth::user()->admin->id;
     }
 
     public function find($id){
@@ -25,7 +28,7 @@ class BlogRepository extends BasicFunctions implements BaseRepository{
 
         $blog = $this->model::create([
 
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "title" => $data["title"],
             "photo" => $imageURL,
             "content" => $data["content"]
@@ -33,7 +36,7 @@ class BlogRepository extends BasicFunctions implements BaseRepository{
         ]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Create",
             "type" => "Blog",
             "action" => "Create a blog ".$data["title"]
@@ -48,7 +51,7 @@ class BlogRepository extends BasicFunctions implements BaseRepository{
         $blog = $this->find($data["id"]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Update",
             "type" => "Blog",
             "action" =>
@@ -77,7 +80,7 @@ class BlogRepository extends BasicFunctions implements BaseRepository{
         ]);
 
         $this->addAdminActivity([
-            "admin_id" => $data["admin_id"],
+            "admin_id" => $this->admin_id,
             "method" => "Update",
             "type" => "Blog",
             "action" => "Update a blog ". $blog->name . " photo"

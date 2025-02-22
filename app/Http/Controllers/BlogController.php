@@ -22,14 +22,26 @@ class BlogController extends Controller
         $this->blogRepository = $blogRepository;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $query = Blog::paginate(10);
 
-        $brands = BlogResource::collection($query);
+        $searchTerm = $request->input('q');
+
+
+        $query = Blog::query();
+
+        if ($searchTerm) {
+            $query->where('title', 'like', '%' . $searchTerm . '%');
+        }
+
+
+        $query = $query->orderBy("id", "desc")->paginate(8);
+
+
+        $blogs = BlogResource::collection($query);
 
         return response()->json([
-            "data" => $brands,
+            "data" => $blogs,
             'meta' => [
                 'current_page' => $query->currentPage(),
                 'last_page' => $query->lastPage(),
@@ -54,14 +66,16 @@ class BlogController extends Controller
     public function store(StoreBlogRequest $request)
     {
         $blog = $this->blogRepository->create([
-            "admin_id" => $request->admin_id,
             "title" => $request->title,
             "photo" => $request->file("photo"),
             "content" => $request->content,
 
         ]);
 
-        return new BlogResource($blog);
+        return response()->json([
+            'message' => 'Blog created successfully',
+            'data' => new BlogResource ($blog)
+        ], 201);
     }
 
     /**
@@ -69,7 +83,13 @@ class BlogController extends Controller
      */
     public function show(Blog $blog)
     {
-        return new BlogResource($blog);
+        return response()->json([
+            "title" => $blog->title,
+            "photo" => $blog->photo,
+            "content" => $blog->content,
+            "time" => $blog->created_at,
+            "author" => $blog->admin->user->name
+        ]);
     }
 
     /**
