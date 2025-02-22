@@ -388,8 +388,8 @@ class PublicController extends Controller
                 ];
             });
 
-        $discount_price = 50000;
-        $discount_percent = 20;
+        $discount_price = 0;
+        $discount_percent = 0;
 
         $profit = $product->price * ($product->profit_percent / 100);
 

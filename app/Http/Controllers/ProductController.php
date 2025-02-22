@@ -189,6 +189,18 @@ class ProductController extends Controller
 
     }
 
+    public function deletePromotion($id){
+
+        $product = $this->productRepository->find($id);
+
+        $product = $product->update([
+            "discount_start" => null,
+            "discount_end" => null,
+            "discount" => 0
+        ]);
+
+    }
+
     public function productTrash(Request $request)
     {
         $searchTerm = $request->input('q');

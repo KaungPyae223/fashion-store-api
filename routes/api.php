@@ -91,6 +91,7 @@ Route::prefix("v1")->group(function () {
             Route::get("properties", [ProductController::class, "getProductProperties"]);
             Route::get("promotion",[ProductController::class,"promotion"]);
             Route::put("promotion/{id}",[ProductController::class,"createPromotion"]);
+            Route::put("delete-promotion/{id}",[ProductController::class,"deletePromotion"]);
 
         });
         Route::apiResource("product",ProductController::class)->except(["destroy"]);
