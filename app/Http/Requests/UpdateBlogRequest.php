@@ -22,7 +22,6 @@ class UpdateBlogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "admin_id" => "required|exists:admins,id",
             "title" => "required|string",
             "content" => "required",
         ];

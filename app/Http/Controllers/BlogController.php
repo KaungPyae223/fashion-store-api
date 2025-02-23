@@ -84,6 +84,7 @@ class BlogController extends Controller
     public function show(Blog $blog)
     {
         return response()->json([
+            "id" => $blog->id,
             "title" => $blog->title,
             "photo" => $blog->photo,
             "content" => $blog->content,
@@ -100,18 +101,15 @@ class BlogController extends Controller
 
     }
 
-    public function updatePhoto (Request $request){
+    public function updatePhoto (Request $request,$id){
 
         $request->validate([
-            "admin_id" => "required|exists:admins,id",
-            "id" => "required|exists:brands,id",
-            "photo" => "required|image|mimes:jpeg,png,jpg,gif",
+            "photo" => "required",
         ]);
 
         $admin = $this->blogRepository->updatePhoto([
-            "id" => $request->id,
+            "id" => $id,
             "photo" => $request->file("photo"),
-            "admin_id" => $request->admin_id,
         ]);
 
         return new BlogResource($admin);
@@ -122,15 +120,14 @@ class BlogController extends Controller
      */
     public function update(UpdateBlogRequest $request, Blog $blog)
     {
-        $blog = $this->blogRepository->update([
+
+        $new_blog = $this->blogRepository->update([
             "id" => $blog->id,
-            "admin_id" => $request->admin_id,
             "title" => $request->title,
-            "photo" => $request->file("photo"),
             "content" => $request->content,
 
         ]);
-        return new BlogResource($blog);
+        return new BlogResource($new_blog);
     }
 
     /**

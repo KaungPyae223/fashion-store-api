@@ -60,7 +60,8 @@ class BlogRepository extends BasicFunctions implements BaseRepository{
         ]);
 
         $blog->update([
-            $data
+            "title" => $data["title"],
+            "content" => $data["content"],
         ]);
 
         return $blog;

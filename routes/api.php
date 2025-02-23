@@ -156,6 +156,7 @@ Route::prefix("v1")->group(function () {
 
     Route::middleware(['auth:sanctum', 'user-role:Blog Management'])->group(function () {
 
+        Route::post('blog/update-photo/{id}',[BlogController::class,"updatePhoto"]);
         Route::apiResource('blog',BlogController::class);
 
     });
@@ -175,6 +176,8 @@ Route::prefix("v1")->group(function () {
         Route::get("all-brands","allBrands");
         Route::get("brand-filter/{brand}","brandFilter");
         Route::get("brand-products/{brand}","brandProducts");
+        Route::get("get-blogs","getBlogs");
+        Route::get("get-blog-details/{id}","getBlogDetails");
     });
 
 });

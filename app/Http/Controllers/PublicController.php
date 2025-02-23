@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BlogResource;
+use App\Models\Blog;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Color;
@@ -201,6 +203,9 @@ class PublicController extends Controller
         $lifeStyle = $lifeStyle->limit(4)->get();
 
 
+        $blogs = Blog::query()->inRandomOrder()->limit(3)->get();
+
+        $blogs = BlogResource::collection($blogs);
 
         return response()->json([
             "hero" => $hero,
@@ -209,7 +214,37 @@ class PublicController extends Controller
             "sneakers" => formatData($sneakers),
             "trending" => formatData($trending),
             "accessories" => formatData($accessories),
-            "lifeStyle" => formatData($lifeStyle)
+            "lifeStyle" => formatData($lifeStyle),
+            "blogs" => $blogs
+        ]);
+    }
+
+    public function getBlogs(){
+
+        $blogs = Blog::paginate(9);
+
+        return response()->json([
+            "data" => BlogResource::collection($blogs),
+            'meta' => [
+                'current_page' => $blogs->currentPage(),
+                'last_page' => $blogs->lastPage(),
+                'total' => $blogs->total(),
+            ],
+        ]);
+
+    }
+
+    public function getBlogDetails($id){
+
+        $blog = Blog::find($id);
+
+        return response()->json([
+            "id" => $blog->id,
+            "title" => $blog->title,
+            "photo" => $blog->photo,
+            "content" => $blog->content,
+            "time" => $blog->created_at,
+            "author" => $blog->admin->user->name
         ]);
     }
 
