@@ -73,8 +73,13 @@ class HeroController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Hero $hero)
+    public function destroy($id)
     {
-        //
+        $hero =  $this->heroRepository->deleteHero($id);
+
+        return response()->json([
+            "message" => "Successfully delete carousel"
+        ]);
+
     }
 }

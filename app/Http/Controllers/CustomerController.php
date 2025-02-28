@@ -7,12 +7,14 @@ use App\Http\Requests\StoreCustomerQuestionRequest;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
+use App\Mail\AskMail;
 use App\Models\Customer;
 use App\Models\CustomerQuestion;
 use App\Models\Order;
 use App\Repositories\CustomerRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class CustomerController extends Controller
 {
@@ -68,6 +70,9 @@ class CustomerController extends Controller
                      "time" => $question->created_at,
                  ];
              });
+
+        Mail::to($request->user()->email)->send(new AskMail());
+
 
          return response()->json([
              "data" => $questions,

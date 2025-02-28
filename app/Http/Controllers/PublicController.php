@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\BlogResource;
+use App\Mail\AnswerMail;
+use App\Mail\AskMail;
+use App\Mail\DeliverMail;
 use App\Models\Blog;
 use App\Models\Brand;
 use App\Models\Category;
@@ -13,8 +16,8 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Size;
 use App\Models\Type;
-use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class PublicController extends Controller
 {

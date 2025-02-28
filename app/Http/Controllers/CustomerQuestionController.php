@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCustomerQuestionRequest;
 use App\Http\Requests\UpdateCustomerQuestionRequest;
+use App\Mail\AnswerMail;
 use App\Models\CustomerQuestion;
 use App\Models\User;
 use App\Repositories\CustomerQuestionRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class CustomerQuestionController extends Controller
 {
@@ -120,7 +122,7 @@ class CustomerQuestionController extends Controller
         ]);
     }
 
-    
+
 
     public function answerQuestion(UpdateCustomerQuestionRequest $request)
     {
@@ -128,6 +130,9 @@ class CustomerQuestionController extends Controller
             "answer" => $request->answer,
             "id" => $request->id
         ]);
+
+        Mail::to($question->customer->user->email)->send(new AnswerMail());
+
 
         return response()->json([
             "data" => [

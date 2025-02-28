@@ -54,4 +54,35 @@ class HeroRepository extends BasicFunctions
 
     }
 
+    function deleteHero($id) {
+
+
+        $hero = $this->model::find($id);
+
+        $this->deletePhoto($hero->image);
+
+        try{
+
+            DB::beginTransaction();
+
+
+            $this->addAdminActivity([
+                "admin_id" => $this->admin_id,
+                "method" => "Delete",
+                "type" => "Carousel",
+                "action" => "Delete a carousel".$hero->id
+            ]);
+
+            $hero->delete();
+
+            DB::commit();
+
+
+
+        }catch(\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
 }

@@ -30,7 +30,6 @@ Route::prefix("v1")->group(function () {
         Route::post('/login', 'LogIn');
         Route::get("check-email","checkEmail");
 
-
     });
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -148,6 +147,8 @@ Route::prefix("v1")->group(function () {
 
         Route::put("ads-change",[PageController::class,"updateADS"]);
         Route::post("create-carousel",[HeroController::class,"store"]);
+        Route::delete("delete-carousel/{id}",[HeroController::class,"destroy"]);
+
 
         Route::post('admin/change-photo',[AdminController::class,"updatePhoto"]);
         Route::apiResource('admin',AdminController::class)->except(["destroy,show"]);

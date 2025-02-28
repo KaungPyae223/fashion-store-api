@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
+use App\Mail\DeliverMail;
+use App\Mail\PostMail;
 use App\Models\Deliver;
 use App\Models\Order;
 use App\Models\User;
@@ -12,6 +14,7 @@ use App\Repositories\OrderRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -288,6 +291,8 @@ class OrderController extends Controller
     {
         $order = $this->orderRepository->create($request->validated());
 
+        Mail::to($request->user()->email)->send(new PostMail(env("Frontend_Base_URL")."/order-details/".$order->id));
+
         return response()->json([
             'message' => 'Order successfully',
             'data' => new OrderResource($order),
@@ -318,6 +323,9 @@ class OrderController extends Controller
     public function update(UpdateOrderRequest $request, $id)
     {
         $order = $this->orderRepository->update( array_merge($request->validated(),["id" => $id]));
+
+        Mail::to($order->customer->user->email)->send(new DeliverMail(env("Frontend_Base_URL")."/order-details/".$order->id));
+
         return new OrderResource($order);
     }
 
