@@ -6,6 +6,7 @@ use App\Models\Blog;
 use App\Repositories\Contract\BaseRepository;
 use App\Repositories\Contract\BasicFunctions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BlogRepository extends BasicFunctions implements BaseRepository{
 
@@ -26,10 +27,14 @@ class BlogRepository extends BasicFunctions implements BaseRepository{
 
         $imageURL = $this->storePhoto($data["photo"],"blogImage");
 
-        $blog = $this->model::create([
+        try{
 
-            "admin_id" => $this->admin_id,
-            "title" => $data["title"],
+            DB::beginTransaction();
+
+            $blog = $this->model::create([
+
+                "admin_id" => $this->admin_id,
+                "title" => $data["title"],
             "photo" => $imageURL,
             "content" => $data["content"]
 
@@ -42,11 +47,24 @@ class BlogRepository extends BasicFunctions implements BaseRepository{
             "action" => "Create a blog ".$data["title"]
         ]);
 
+        DB::commit();
+
+        }catch(\Exception $e){
+
+            DB::rollBack();
+
+            return $e;
+        }
+
         return $blog;
 
     }
 
     public function update(array $data){
+
+        try{
+
+            DB::beginTransaction();
 
         $blog = $this->find($data["id"]);
 
@@ -63,6 +81,16 @@ class BlogRepository extends BasicFunctions implements BaseRepository{
             "title" => $data["title"],
             "content" => $data["content"],
         ]);
+
+        DB::commit();
+
+        }catch(\Exception $e){
+
+            DB::rollBack();
+
+            return $e;
+
+        }
 
         return $blog;
 
