@@ -296,7 +296,6 @@ class CustomerController extends Controller
 
         $customer = Customer::find($id);
 
-        $customer_orders = $customer->orders()->get();
 
         return response()->json([
             "customer" => [
@@ -304,20 +303,44 @@ class CustomerController extends Controller
                 "email" => $customer->user->email,
                 "phone" => $customer->phone,
                 "address" => $customer->address,
+                "total_orders" => $customer->orders->count()
+            ]
 
-            ],
-            "customer_orders" => $customer_orders->map(function($order){
+        ]);
+
+    }
+
+    public function customerOrder (Request $request, $id){
+        $customer = Customer::find($id);
+
+        $time = $request->input("time");
+
+        $customer_orders = $customer->orders()->orderBy("id", "desc");
+
+        if($time){
+            $customer_orders->where("created_at",$time);
+        }
+
+        $customer_orders = $customer_orders->paginate(10);
+
+        return response()->json([
+            "data" => $customer_orders->map(function($data){
                 return [
-                    "id" => $order->id,
-                    "date" => $order->created_at,
-                    "total_qty" => $order->total_qty,
-                    "total_products" => $order->orderDetails()->count(),
-                    "total_amount" => $order->total_price,
-                    "tax" => $order->tax,
-                    "payment" => $order->payment->payment,
-                    "status" => $order->status,
+                    "id" => $data->id,
+                    "payment_method" => $data->payment->payment,
+                    "total_products" => $data->total_products,
+                    "total_qty" => $data->total_qty,
+                    "tax" => $data->tax,
+                    "amount" => $data->total_price,
+                    "status" => $data->status,
+                    "date" => $data->created_at
                 ];
-            })
+            }),
+            'meta' => [
+                'current_page' => $customer_orders->currentPage(),
+                'last_page' => $customer_orders->lastPage(),
+                'total' => $customer_orders->total(),
+            ],
         ]);
 
     }

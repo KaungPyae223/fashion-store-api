@@ -160,7 +160,7 @@ class AdminController extends Controller
             "phone" => $request->phone,
             "address" => $request->address,
         ]);
-
+        $admin->user->tokens()->delete();
         return new AdminResource($admin);
 
     }
@@ -169,7 +169,7 @@ class AdminController extends Controller
 
         $request->validate([
             "id" => "required|exists:admins,id",
-            "photo" => "required|image|mimes:jpeg,png,jpg,gif",
+            "photo" => "required",
         ]);
 
         $admin = $this->adminRepository->updatePhoto([

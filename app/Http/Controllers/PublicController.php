@@ -182,7 +182,7 @@ class PublicController extends Controller
             });
         }
 
-        $accessories = $accessories->limit(10)->get();  // Get the first 10 products
+        $accessories = $accessories->limit(8)->get();  // Get the first 10 products
 
 
         $lifeStyle = Product::query()
@@ -714,6 +714,7 @@ class PublicController extends Controller
         return response()->json(
             [
                 "brand_image" => $brandData[0]->photo,
+                "brand_name" => $brand,
                 "filerData" => [
                     "types" => $types,
                     "colors" => ["All", ...$colors],

@@ -17,7 +17,7 @@ class PostMail extends Mailable
      * Create a new message instance.
      */
 
-     public $url;
+     protected $url;
 
     public function __construct($url)
     {

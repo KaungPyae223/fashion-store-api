@@ -32,6 +32,7 @@ Route::prefix("v1")->group(function () {
 
     });
 
+
     Route::middleware('auth:sanctum')->group(function () {
 
 
@@ -109,10 +110,11 @@ Route::prefix("v1")->group(function () {
         });
 
         Route::get("customer-order",[OrderController::class,"customerOrder"]);
-        Route::get("order/order-history/{id}",[OrderController::class,"orderHistoryDetails"]);
+        Route::get("customer/order-details/{id}",[OrderController::class,"orderHistoryDetails"]);
 
         Route::get("customer-list",[CustomerController::class,"index"]);
         Route::get("customer-details/{id}",[CustomerController::class,"customerDetails"]);
+        Route::get("customer-order/{id}",[CustomerController::class,"customerOrder"]);
 
         Route::get('all-payment',[PaymentController::class,"allPayments"]);
 
@@ -133,8 +135,12 @@ Route::prefix("v1")->group(function () {
 
     });
 
+
     Route::middleware(['auth:sanctum', 'user-role:Super Admin'])->group(function () {
 
+        Route::get('/order-csv',[OrderController::class,"orderCSVExport"]);
+        Route::get('/order-analysis',[OrderController::class,'orderAnalysis']);
+        Route::get('/order-list',[OrderController::class,'orderList']);
         Route::apiResource("deliver",DeliverController::class);
         Route::apiResource("payment",PaymentController::class);
 

@@ -25,7 +25,7 @@ class StoreAdminRequest extends FormRequest
             "name" => "required",
             "email" => "required|unique:users,email",
             "role" => "required",
-            "photo" => "required|image|mimes:jpeg,png,jpg,gif",
+            "photo" => "required",
             "phone" => "required",
             "address" => "required",
         ];
