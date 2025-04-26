@@ -316,7 +316,10 @@ class PublicController extends Controller
         $query = $query->where("products.is_delete", false)->where("status", "public");
 
         if ($gender && $gender !== "All") {
-            $query->where("products.gender", $gender)->orWhere("gender", "All");
+            $query->where(function ($query) use ($gender) {
+                $query->where("products.gender", $gender)
+                      ->orWhere("products.gender", "All");
+            });
         }
 
         if ($brand && $brand != "All") {
@@ -465,7 +468,8 @@ class PublicController extends Controller
                         "id" => $productSize->id,
                         "name" => $productSize->size->size
                     ];
-                }),
+                })->values() // Add this line
+                ->toArray(),
 
                 "description" => $product->description
             ],
@@ -538,13 +542,25 @@ class PublicController extends Controller
 
         $query = Product::query();
 
-        if ($gender) {
-            $query = $query->where("gender", $gender)->orWhere("gender", "All");
+        if ($gender && $gender !== "All") {
+            $query->where(function ($query) use ($gender) {
+                $query->where('gender', $gender)
+                      ->orWhere('gender', 'All');
+            });
         }
 
-        $products = $query->where("name", "like", "%$searchTerm%")->orWhereHas("brand", function ($q) use ($searchTerm) {
-            $q->where("name", "like", "%$searchTerm%");
-        })->limit(8)->get()->map(function ($product) {
+
+        if ($searchTerm) {
+           $query->where(function ($query) use ($searchTerm) {
+               $query->where("name", "like", "%$searchTerm%") // This is now Condition 2
+                     ->orWhereHas("brand", function ($q) use ($searchTerm) {
+                         $q->where("name", "like", "%$searchTerm%"); // This is now Condition 3
+                     });
+           });
+        }
+
+
+        $products = $query->limit(8)->get()->map(function ($product) {
             $discount_price = 0;
             $discount_percent = 0;
 
@@ -587,13 +603,27 @@ class PublicController extends Controller
 
         $query = Product::query();
 
-        if ($gender) {
-            $query = $query->where("gender", $gender)->orWhere("gender", "All");
+        if ($gender && $gender !== "All") {
+            $query->where(function ($query) use ($gender) {
+                $query->where('gender', $gender)
+                      ->orWhere('gender', 'All');
+            });
         }
 
-        $query = $query->where("name", "like", "%$searchTerm%")->orWhereHas("brand", function ($q) use ($searchTerm) {
-            $q->where("name", "like", "%$searchTerm%");
-        })->paginate(25);
+        // Group the search term conditions
+        // Only apply search filter if a search term is provided
+        if ($searchTerm) {
+           $query->where(function ($query) use ($searchTerm) {
+               $query->where("name", "like", "%$searchTerm%") // This is now Condition 2
+                     ->orWhereHas("brand", function ($q) use ($searchTerm) {
+                         $q->where("name", "like", "%$searchTerm%"); // This is now Condition 3
+                     });
+           });
+        }
+
+
+        // Paginate the built query
+        $query = $query->paginate(25);
 
         $data = $query->map(function ($product) {
 
@@ -676,7 +706,7 @@ class PublicController extends Controller
 
         if ($gender) {
             $types =   $types->filter(function ($type) use ($gender) {
-                return $type->gender === "Women" || $type->gender === "All";
+                return $type->gender === $gender || $type->gender === "All";
             });
         }
 
@@ -740,7 +770,10 @@ class PublicController extends Controller
         $query = $query->where("is_delete", false)->where("status", "public");
 
         if ($gender && $gender !== "All") {
-            $query->where("gender", $gender)->orWhere("gender", "All");
+            $query->where(function ($query) use ($gender) {
+                $query->where("products.gender", $gender)
+                      ->orWhere("products.gender", "All");
+            });
         }
 
         $query->whereHas('brand', function ($q) use ($brand) {
