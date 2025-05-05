@@ -71,7 +71,6 @@ class CustomerController extends Controller
                  ];
              });
 
-        Mail::to($request->user()->email)->send(new AskMail());
 
 
          return response()->json([
@@ -115,6 +114,9 @@ class CustomerController extends Controller
              "customer_id" => $request->user()->customer->id,
              "question" => $request->question
          ]);
+
+         Mail::to($request->user()->email)->send(new AskMail());
+
 
          return response()->json([
              "data" => [

@@ -128,7 +128,7 @@ Route::prefix("v1")->group(function () {
             Route::get('order/order-history', 'orderHistory');
             Route::get('order/package/{id}', 'packagingData');
             Route::put('order/change-status/{id}', 'update');
-            Route::get('order-list', 'index');
+            Route::get('order-management-list', 'index');
             Route::get('order-history', 'orderHistory');
         });
         Route::apiResource("deliver",DeliverController::class)->only(["index"]);

@@ -110,9 +110,11 @@ class DeliverController extends Controller
      */
     public function destroy(Deliver $deliver)
     {
-        $deliver->order->count();
+        $deliverCount =  $deliver->order->count();
 
-        if($deliver == 0){
+
+
+        if($deliverCount == 0){
             $this->deliverRepository->delete($deliver->id);
             return response()->json(['message' => 'Delivery deleted successfully']);
         }else{

@@ -24,7 +24,6 @@ class UpdateAdminRequest extends FormRequest
         return [
             "name" => "required",
             "role" => "required",
-            "email" => "required|email|unique:users,email," . $this->route('admin')->id,
             "phone" => "required",
             "address" => "required",
         ];
